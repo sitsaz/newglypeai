@@ -1,40 +1,41 @@
-```
-# Dependencies
-node_modules/
-
 # Logs and temp files
 *.log
-*.tmp
 
-# Environment
+# Environment files
 .env
 .env.local
 *.env.*
 
-# Editors
-.vscode/
-.idea/
+# Dependencies
+node_modules/
+vendor/
+composer.lock
 
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg-info/
-.eggs/
-
-# Build directories
+# Build artifacts
 dist/
 build/
 target/
-*.out
+release/
+releases/
+
+# Cache directories
+.cache/
+.tmp/
+*.tmp
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP specific
+*.php~
+*.bak
 
 # Compression archives
 *.zip
@@ -59,13 +60,3 @@ target/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# System files
-.DS_Store
-Thumbs.db
-
-# Cache directories
-.mypy_cache/
-.pytest_cache/
-.gradle/
-```

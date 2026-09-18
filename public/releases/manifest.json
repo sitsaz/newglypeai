@@ -1,6 +1,39 @@
 {
-  "latest": "8.0.0",
+  "latest": "9.0.0",
   "releases": [
+    {
+      "version": "9.0.0",
+      "date": "2026-09-18T07:50:01Z",
+      "changelog": [
+        {
+          "version": "8.0.0",
+          "date": "2026-09-18T07:44:43.287551+00:00",
+          "changes": [
+            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
+          ]
+        }
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v9.0.0.zip",
+          "url": "/releases/cloud-portal-php-v9.0.0.zip",
+          "size": 24022,
+          "sha256": "c9d986d747495d7ace24cbd48ebd91a650adf142bf2b86e7115f7d9702d73b4a"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v9.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v9.0.0.zip",
+          "size": 23832,
+          "sha256": "29e0f7f3e9052e612c234ed6348ddb04d18a2e53cf28eb132a2dd91862f742a9"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-v9.0.0.zip",
+          "url": "/releases/cloud-portal-full-v9.0.0.zip",
+          "size": 303093,
+          "sha256": "84172950b7234d591f8a0879beb6a4d76cbbb166a668b5d95a432ebe687848e1"
+        }
+      }
+    },
     {
       "version": "8.0.0",
       "date": "2026-09-18T07:44:43Z",
@@ -35,5 +68,5 @@
       }
     }
   ],
-  "lastUpdated": "2026-09-18T07:44:43Z"
+  "lastUpdated": "2026-09-18T07:50:01Z"
 }
