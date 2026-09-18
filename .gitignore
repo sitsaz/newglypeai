@@ -1,5 +1,13 @@
-```gitignore
-# Compressed archives
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+target/
+
+# Compressed files
 *.zip
 *.gz
 *.tar
@@ -18,15 +26,9 @@
 *.Z
 *.lz
 *.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 
-# Build artifacts
-dist/
-node_modules/
-
-# Dependencies
-node_modules/
-
-# Production releases
-releases/
-public/releases/
 ```
