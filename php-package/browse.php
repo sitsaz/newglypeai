@@ -59,6 +59,23 @@ $method = $_SERVER['REQUEST_METHOD'];
 $postData = ($method === 'POST') ? file_get_contents('php://input') : null;
 
 $customHeaders = [];
+if (function_exists('getallheaders')) {
+    foreach(getallheaders() as $name => $val) {
+        $nameLower = strtolower($name);
+        if (!in_array($nameLower, ['host', 'cookie', 'content-length', 'connection', 'accept-encoding', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-real-ip', 'via', 'forwarded', 'client-ip', 'true-client-ip', 'cf-connecting-ip', 'x-cluster-client-ip'])) {
+            $customHeaders[$nameLower] = $val;
+        }
+    }
+} else {
+    foreach($_SERVER as $key => $val) {
+        if (strpos($key, 'HTTP_') === 0) {
+            $name = strtolower(str_replace('_', '-', substr($key, 5)));
+            if (!in_array($name, ['host', 'cookie', 'content-length', 'connection', 'accept-encoding', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-real-ip', 'via', 'forwarded', 'client-ip', 'true-client-ip', 'cf-connecting-ip', 'x-cluster-client-ip'])) {
+                $customHeaders[$name] = $val;
+            }
+        }
+    }
+}
 if (isset($_SERVER['CONTENT_TYPE'])) {
     $customHeaders['content-type'] = $_SERVER['CONTENT_TYPE'];
 }

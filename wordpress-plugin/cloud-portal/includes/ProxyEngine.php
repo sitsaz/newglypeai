@@ -296,6 +296,16 @@ class StealthPortalEngine {
             $html = preg_replace_callback('/<script\b([^>]*?)\bsrc=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
                 return '<script' . $m[1] . 'src=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
             }, $html);
+
+            // Rewrite inline scripts
+            $html = preg_replace_callback('/<script\b([^>]*)>(.*?)<\/script>/is', function($m) use ($targetUrl, $options) {
+                $innerJs = $m[2];
+                if (strpos($innerJs, '__ptb_wrap') !== false || strpos($innerJs, 'resolveStreamUrl') !== false || trim($innerJs) === '') {
+                    return $m[0];
+                }
+                $rewrittenJs = $this->rewriteJs($innerJs, $targetUrl, $options);
+                return '<script' . $m[1] . '>' . $rewrittenJs . '</script>';
+            }, $html);
         }
 
         // 12. Rewrite <iframe src="...">
@@ -371,28 +381,38 @@ class StealthPortalEngine {
 
         $cookieHeader = $this->cookieJar->getCookieHeader($targetUrl);
 
-        // Disguised desktop headers matching standard Chrome 131
-        $headers = [
-            'User-Agent: ' . $this->userAgent,
-            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language: fa,en-US;q=0.9,en;q=0.8',
-            'Referer: ' . $parsed['scheme'] . '://' . $parsed['host'] . '/',
-            'Sec-Ch-Ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-            'Sec-Ch-Ua-Mobile: ?0',
-            'Sec-Ch-Ua-Platform: "Windows"',
-            'Sec-Fetch-Dest: document',
-            'Sec-Fetch-Mode: navigate',
-            'Sec-Fetch-Site: none',
-            'Sec-Fetch-User: ?1',
-            'Upgrade-Insecure-Requests: 1',
-        ];
+        $headers = [];
+        $headerNames = [];
+        foreach($customHeaders as $k => $v) {
+            $headers[] = $k . ': ' . $v;
+            $headerNames[] = strtolower($k);
+        }
+        
+        if (!in_array('user-agent', $headerNames)) {
+            $headers[] = 'User-Agent: ' . $this->userAgent;
+            $headers[] = 'Sec-Ch-Ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"';
+            $headers[] = 'Sec-Ch-Ua-Mobile: ?0';
+            $headers[] = 'Sec-Ch-Ua-Platform: "Windows"';
+        }
+        if (!in_array('accept', $headerNames)) {
+            $headers[] = 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8';
+        }
+        if (!in_array('accept-language', $headerNames)) {
+            $headers[] = 'Accept-Language: fa,en-US;q=0.9,en;q=0.8';
+        }
+        if (!in_array('referer', $headerNames)) {
+            $headers[] = 'Referer: ' . $parsed['scheme'] . '://' . $parsed['host'] . '/';
+        }
+        if (!in_array('sec-fetch-dest', $headerNames)) {
+            $headers[] = 'Sec-Fetch-Dest: document';
+            $headers[] = 'Sec-Fetch-Mode: navigate';
+            $headers[] = 'Sec-Fetch-Site: none';
+            $headers[] = 'Sec-Fetch-User: ?1';
+        }
+        $headers[] = 'Upgrade-Insecure-Requests: 1';
 
         if (!empty($cookieHeader)) {
             $headers[] = 'Cookie: ' . $cookieHeader;
-        }
-
-        if (!empty($customHeaders['content-type'])) {
-            $headers[] = 'Content-Type: ' . $customHeaders['content-type'];
         }
 
         if (function_exists('curl_init')) {

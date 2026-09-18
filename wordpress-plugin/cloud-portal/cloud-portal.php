@@ -3,7 +3,7 @@
  * Plugin Name: Cloud Portal & Web Viewer
  * Plugin URI: https://github.com/sitsaz/cloud-portal
  * Description: سامانه پیشرفته پرتال مرورگر و نمایشگر وب برای وردپرس با معماری کاملاً نامحسوس (Stealth)، کوکی‌جار RFC 6265، رمزگذاری آدرس‌ها و نوار ابزار Glype.
- * Version: 3.3.1
+ * Version: 3.3.3
  * Author: sitsaz
  * License: MIT
  * Text Domain: cloud-portal
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit; // Prevent direct access
 }
 
-define('CLOUD_PORTAL_VERSION', '3.3.1');
+define('CLOUD_PORTAL_VERSION', '3.3.3');
 define('CLOUD_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('CLOUD_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -149,6 +149,23 @@ class CloudPortalWordPressPlugin {
         $postData = ($method === 'POST') ? file_get_contents('php://input') : null;
 
         $customHeaders = [];
+        if (function_exists('getallheaders')) {
+            foreach(getallheaders() as $name => $val) {
+                $nameLower = strtolower($name);
+                if (!in_array($nameLower, ['host', 'cookie', 'content-length', 'connection', 'accept-encoding', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-real-ip', 'via', 'forwarded', 'client-ip', 'true-client-ip', 'cf-connecting-ip', 'x-cluster-client-ip'])) {
+                    $customHeaders[$nameLower] = sanitize_text_field($val);
+                }
+            }
+        } else {
+            foreach($_SERVER as $key => $val) {
+                if (strpos($key, 'HTTP_') === 0) {
+                    $name = strtolower(str_replace('_', '-', substr($key, 5)));
+                    if (!in_array($name, ['host', 'cookie', 'content-length', 'connection', 'accept-encoding', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-real-ip', 'via', 'forwarded', 'client-ip', 'true-client-ip', 'cf-connecting-ip', 'x-cluster-client-ip'])) {
+                        $customHeaders[$name] = sanitize_text_field($val);
+                    }
+                }
+            }
+        }
         if (isset($_SERVER['CONTENT_TYPE'])) {
             $customHeaders['content-type'] = sanitize_text_field($_SERVER['CONTENT_TYPE']);
         }

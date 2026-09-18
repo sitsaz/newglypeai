@@ -30,7 +30,11 @@
   }
 
   function resolveStreamUrl(url) {
-    if (!url || typeof url !== 'string') return url;
+    if (!url) return url;
+    if (typeof url !== 'string') {
+        if (url.toString) url = url.toString();
+        else return url;
+    }
     var trimmed = url.trim();
     if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('javascript:') || trimmed.startsWith('#')) {
       return trimmed;
@@ -95,15 +99,30 @@
 
     var originalFetch = window.fetch;
     window.fetch = function(input, init) {
-      if (typeof input === 'string') {
-        input = resolveStreamUrl(input);
+      var isRequestObj = false;
+      var newUrl = '';
+      if (typeof input === 'string' || input instanceof URL) {
+        input = resolveStreamUrl(input.toString());
       } else if (input && typeof input.url === 'string') {
-        try {
-          var newUrl = resolveStreamUrl(input.url);
-          input = new Request(newUrl, input);
-        } catch (e) {}
+        isRequestObj = true;
+        newUrl = resolveStreamUrl(input.url);
       }
-      return originalFetch.call(this, input, init).then(function(response) {
+      
+      var fetchPromise;
+      if (isRequestObj) {
+         if (!init) {
+            fetchPromise = originalFetch.call(this, newUrl, input);
+         } else {
+            try {
+              input = new Request(newUrl, input);
+            } catch(e) {}
+            fetchPromise = originalFetch.call(this, input, init);
+         }
+      } else {
+         fetchPromise = originalFetch.call(this, input, init);
+      }
+
+      return fetchPromise.then(function(response) {
         try {
           var ct = response.headers.get('content-type') || '';
           if (ct.indexOf('json') !== -1) {
@@ -130,7 +149,10 @@
     var originalOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
       var proxied = resolveStreamUrl(url);
-      return originalOpen.call(this, method, proxied, async !== false, user, password);
+      if (arguments.length >= 5) return originalOpen.call(this, method, proxied, async, user, password);
+      if (arguments.length === 4) return originalOpen.call(this, method, proxied, async, user);
+      if (arguments.length === 3) return originalOpen.call(this, method, proxied, async);
+      return originalOpen.call(this, method, proxied);
     };
   }
 
@@ -261,17 +283,34 @@
               if (h && !h.startsWith('#') && !h.startsWith('javascript:') && h.indexOf(gatewayScript) === -1) {
                 node.setAttribute('href', resolveStreamUrl(h));
               }
+            } else if (tag === 'FORM') {
+              var a = node.getAttribute('action');
+              if (a && !a.startsWith('#') && !a.startsWith('javascript:') && a.indexOf(gatewayScript) === -1) {
+                node.setAttribute('action', resolveStreamUrl(a));
+              }
             }
-            // Check data attributes
-            var dataEls = node.querySelectorAll ? node.querySelectorAll('[data-src], [data-thumb], [data-background], [data-poster], [data-url], [data-image], [data-original], [data-bg]') : [];
+            // Check data attributes and child forms/links
+            var dataEls = node.querySelectorAll ? node.querySelectorAll('form, a, [data-src], [data-thumb], [data-background], [data-poster], [data-url], [data-image], [data-original], [data-bg]') : [];
             for (var i = 0; i < dataEls.length; i++) {
               var el = dataEls[i];
-              ['data-src', 'data-thumb', 'data-background', 'data-poster', 'data-url', 'data-image', 'data-original', 'data-bg'].forEach(function(attr) {
-                var val = el.getAttribute(attr);
-                if (val && val.indexOf(gatewayScript) === -1) {
-                  el.setAttribute(attr, resolveStreamUrl(val));
-                }
-              });
+              if (el.tagName === 'FORM') {
+                 var fa = el.getAttribute('action');
+                 if (fa && !fa.startsWith('#') && !fa.startsWith('javascript:') && fa.indexOf(gatewayScript) === -1) {
+                   el.setAttribute('action', resolveStreamUrl(fa));
+                 }
+              } else if (el.tagName === 'A') {
+                 var fh = el.getAttribute('href');
+                 if (fh && !fh.startsWith('#') && !fh.startsWith('javascript:') && fh.indexOf(gatewayScript) === -1) {
+                   el.setAttribute('href', resolveStreamUrl(fh));
+                 }
+              } else {
+                 ['data-src', 'data-thumb', 'data-background', 'data-poster', 'data-url', 'data-image', 'data-original', 'data-bg'].forEach(function(attr) {
+                   var val = el.getAttribute(attr);
+                   if (val && val.indexOf(gatewayScript) === -1) {
+                     el.setAttribute(attr, resolveStreamUrl(val));
+                   }
+                 });
+              }
             }
           }
         });

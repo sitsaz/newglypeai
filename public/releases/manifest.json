@@ -1,6 +1,55 @@
 {
-  "latest": "3.3.1",
+  "latest": "3.3.3",
   "releases": [
+    {
+      "version": "3.3.3",
+      "date": "2026-09-18T06:07:32Z",
+      "changelog": [
+        "رفع مشکل نشت آی‌پی اصلی کاربر (IP Leak) با فیلتر کردن دقیق هدرهای X-Forwarded-For و سایر هدرهای شناسایی کلاینت",
+        "حل مشکل کامل لاگین به جیمیل (Gmail) و گوگل: رفع افتادگی هدرهای XHR، پشتیبانی از متد Fetch با Object Request و اصلاح MutationObserver برای Form Action",
+        "انتقال صحیح هدرهای مهم سمت کلاینت (مانند Accept و X-Requested-With) به سرور مقصد جهت جلوگیری از خطاهای امنیتی",
+        "رفع باگ ارسال آدرس نامعتبر در نوار ناوبری (Toolbar) و پیاده‌سازی Encode استاندارد در فرم جستجوی بالای صفحه",
+        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v3.3.3.zip",
+          "url": "/releases/cloud-portal-php-v3.3.3.zip",
+          "size": 22572,
+          "sha256": "0263b3ab1ba51fefb601f8dc151a9387ff5cc159423e32cff15bba931a17ff47"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v3.3.3.zip",
+          "url": "/releases/cloud-portal-wp-v3.3.3.zip",
+          "size": 21961,
+          "sha256": "e5702829857af770837eff6522846e85c48d63d7539ab9bc3ed9618568fe1053"
+        }
+      }
+    },
+    {
+      "version": "3.3.2",
+      "date": "2026-09-18T05:59:53Z",
+      "changelog": [
+        "حل مشکل کامل لاگین به جیمیل (Gmail) و گوگل: رفع افتادگی هدرهای XHR، پشتیبانی از متد Fetch با Object Request و اصلاح MutationObserver برای Form Action",
+        "انتقال صحیح هدرهای مهم سمت کلاینت (مانند Accept و X-Requested-With) به سرور مقصد جهت جلوگیری از خطاهای امنیتی",
+        "رفع باگ ارسال آدرس نامعتبر در نوار ناوبری (Toolbar) و پیاده‌سازی Encode استاندارد در فرم جستجوی بالای صفحه",
+        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v3.3.2.zip",
+          "url": "/releases/cloud-portal-php-v3.3.2.zip",
+          "size": 22508,
+          "sha256": "eaf85f66424dab30ab62e3ff713ba18cd519768a8518692db59cf5df69d7317e"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v3.3.2.zip",
+          "url": "/releases/cloud-portal-wp-v3.3.2.zip",
+          "size": 21900,
+          "sha256": "1d12decfae9b22e74cc9282ea1b64d9aa94773cdb094ebaf1e232e96dff48bff"
+        }
+      }
+    },
     {
       "version": "3.3.1",
       "date": "2026-09-18T05:47:15Z",
@@ -122,5 +171,5 @@
       }
     }
   ],
-  "lastUpdated": "2026-09-18T05:47:15Z"
+  "lastUpdated": "2026-09-18T06:07:32Z"
 }
