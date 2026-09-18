@@ -139,8 +139,24 @@ function cp_handle_upload_session() {
         return;
     }
     
-    // Get cookies from POST data
-    $cookiesJson = isset($_POST['cookies']) ? $_POST['cookies'] : '';
+    // Get cookies from POST data - support both raw JSON and form-encoded
+    $cookiesJson = '';
+    if (isset($_POST['cookies'])) {
+        $cookiesJson = $_POST['cookies'];
+    } elseif (isset($_POST['data'])) {
+        $cookiesJson = $_POST['data'];
+    } else {
+        // Try to read from php://input for raw JSON
+        $rawInput = file_get_contents('php://input');
+        if (!empty($rawInput)) {
+            $parsed = json_decode($rawInput, true);
+            if (isset($parsed['cookies'])) {
+                $cookiesJson = json_encode($parsed['cookies']);
+            } elseif (is_array($parsed)) {
+                $cookiesJson = $rawInput;
+            }
+        }
+    }
     if (empty($cookiesJson)) {
         wp_send_json_error(['message' => 'داده‌های کوکی خالی است']);
         return;
