@@ -197,28 +197,17 @@ app.post('/api/proxy/cookies/sync', async (req, res) => {
   }
 });
 
+import { StealthCipher } from './server/cipher';
+
 // --- Universal Modern Proxy Gateway ---
 app.all('/api/proxy/gateway', async (req, res) => {
-  let targetUrl = (req.query.b || req.query.url || req.body?.b || req.body?.url) as string;
-  if (targetUrl && !targetUrl.match(/^https?:\/\//i)) {
-    try {
-      let b64 = targetUrl.replace(/-/g, '+').replace(/_/g, '/');
-      while (b64.length % 4) b64 += '=';
-      const buf = Buffer.from(b64, 'base64');
-      const key = 'cp_vault_key';
-      let decoded = '';
-      for (let i = 0; i < buf.length; i++) {
-        decoded += String.fromCharCode(buf[i] ^ key.charCodeAt(i % key.length));
-      }
-      if (decoded.match(/^https?:\/\//i)) {
-        targetUrl = decoded;
-      } else {
-        const plain = Buffer.from(b64, 'base64').toString('utf8');
-        if (plain.match(/^https?:\/\//i)) {
-          targetUrl = plain;
-        }
-      }
-    } catch (e) {}
+  let rawUrl = (req.query.b || req.query.url || req.query.cp_url || req.body?.b || req.body?.url) as string;
+  let targetUrl = '';
+  if (rawUrl) {
+    targetUrl = StealthCipher.decode(rawUrl);
+    if (!targetUrl.match(/^https?:\/\//i)) {
+      targetUrl = 'https://' + targetUrl;
+    }
   }
 
   if (!targetUrl) {
@@ -234,11 +223,11 @@ app.all('/api/proxy/gateway', async (req, res) => {
   }
 
   const options: ProxyOptions = {
-    removeScripts: req.query.removeScripts === 'true' || req.query.rs === '1' || req.body?.removeScripts === true,
-    removeImages: req.query.removeImages === 'true' || req.query.ri === '1' || req.body?.removeImages === true,
-    stripTitle: req.query.stripTitle === 'true' || req.query.st === '1' || req.body?.stripTitle === true,
-    showToolbar: req.query.showToolbar === 'true' || req.query.tb === '1' || req.body?.showToolbar === true,
-    encodeURL: req.query.encodeURL === 'true' || req.query.enc === '1' || req.body?.encodeURL === true,
+    removeScripts: req.query.removeScripts === 'true' || req.query.rs === '1' || req.query.cp_rs === '1' || req.body?.removeScripts === true,
+    removeImages: req.query.removeImages === 'true' || req.query.ri === '1' || req.query.cp_ri === '1' || req.body?.removeImages === true,
+    stripTitle: req.query.stripTitle === 'true' || req.query.st === '1' || req.query.cp_st === '1' || req.body?.stripTitle === true,
+    showToolbar: req.query.showToolbar === 'true' || req.query.tb === '1' || req.query.cp_tb === '1' || req.body?.showToolbar === true,
+    encodeURL: req.query.encodeURL === 'true' || req.query.enc === '1' || req.query.cp_enc === '1' || req.body?.encodeURL === true,
     userAgent: (req.query.userAgent || req.body?.userAgent) as string,
     stripSecurityHeaders: req.query.stripSecurityHeaders !== 'false',
     injectHook: req.query.injectHook !== 'false',

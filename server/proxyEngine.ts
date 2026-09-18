@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as cheerio from 'cheerio';
 import { storeCookiesFromHeaders, getCookieHeaderString } from './cookieJar';
 import { generateProxyHook } from './proxyHook';
+import { StealthCipher } from './cipher';
 
 export interface ProxyOptions {
   removeScripts?: boolean;
@@ -91,14 +92,24 @@ export function normalizeUrl(inputUrl: string): string {
 
 /**
  * Generates a proxied gateway URL for an absolute or relative destination.
+ * Respects options.encodeURL (Stealth Cipher) and preserves browsing flags.
  */
-export function makeProxiedUrl(targetUrl: string, baseUrl?: string): string {
+export function makeProxiedUrl(
+  targetUrl: string,
+  baseUrl?: string,
+  options: ProxyOptions = {}
+): string {
   if (!targetUrl || typeof targetUrl !== 'string') return targetUrl;
   const trimmed = targetUrl.trim();
-  if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('javascript:') || trimmed.startsWith('#')) {
+  if (
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:') ||
+    trimmed.startsWith('javascript:') ||
+    trimmed.startsWith('#')
+  ) {
     return trimmed;
   }
-  if (trimmed.startsWith('/api/proxy/gateway')) {
+  if (trimmed.startsWith('/api/proxy/gateway') || trimmed.indexOf('?b=') !== -1 || trimmed.indexOf('&b=') !== -1) {
     return trimmed;
   }
 
@@ -111,24 +122,36 @@ export function makeProxiedUrl(targetUrl: string, baseUrl?: string): string {
     }
   }
 
-  return `/api/proxy/gateway?url=${encodeURIComponent(resolved)}`;
+  const isEncoded = !!options.encodeURL;
+  let flagStr = '';
+  if (options.removeScripts) flagStr += '&rs=1';
+  if (options.removeImages) flagStr += '&ri=1';
+  if (options.stripTitle) flagStr += '&st=1';
+  if (options.showToolbar) flagStr += '&tb=1';
+  if (isEncoded) flagStr += '&enc=1';
+
+  if (isEncoded) {
+    const encoded = StealthCipher.encode(resolved);
+    return `/api/proxy/gateway?b=${encodeURIComponent(encoded)}${flagStr}`;
+  }
+  return `/api/proxy/gateway?url=${encodeURIComponent(resolved)}${flagStr}`;
 }
 
 /**
  * Rewrites CSS text to route url(...) and @import through the proxy.
  */
-export function rewriteCss(cssContent: string, baseUrl: string): string {
+export function rewriteCss(cssContent: string, baseUrl: string, options: ProxyOptions = {}): string {
   return cssContent
     .replace(/url\(\s*(['"]?)(.*?)\1\s*\)/gi, (match, quote, url) => {
       const cleanUrl = url.trim();
       if (cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:') || cleanUrl.startsWith('#')) {
         return match;
       }
-      const proxied = makeProxiedUrl(cleanUrl, baseUrl);
+      const proxied = makeProxiedUrl(cleanUrl, baseUrl, options);
       return `url("${proxied}")`;
     })
     .replace(/@import\s+(['"])(.*?)\1/gi, (match, quote, url) => {
-      const proxied = makeProxiedUrl(url, baseUrl);
+      const proxied = makeProxiedUrl(url, baseUrl, options);
       return `@import "${proxied}"`;
     });
 }
@@ -157,7 +180,11 @@ export function rewriteHtml(
   if (options.stripTitle) {
     if ($('title').length > 0) {
       $('title').text('صفحه وب | Web Document');
+    } else {
+      $('head').prepend('<title>صفحه وب | Web Document</title>');
     }
+    $('meta[property="og:title"]').attr('content', 'صفحه وب | Web Document');
+    $('meta[name="twitter:title"]').attr('content', 'صفحه وب | Web Document');
   }
 
   // 2. Remove scripts if requested
@@ -174,13 +201,13 @@ export function rewriteHtml(
     // Rewrite img src and srcset
     $('img').each((_, el) => {
       const src = $(el).attr('src');
-      if (src) $(el).attr('src', makeProxiedUrl(src, targetUrl));
+      if (src) $(el).attr('src', makeProxiedUrl(src, targetUrl, options));
       
       const srcset = $(el).attr('srcset');
       if (srcset) {
         const newSrcset = srcset.split(',').map(part => {
           const [u, ...rest] = part.trim().split(/\s+/);
-          return `${makeProxiedUrl(u, targetUrl)} ${rest.join(' ')}`.trim();
+          return `${makeProxiedUrl(u, targetUrl, options)} ${rest.join(' ')}`.trim();
         }).join(', ');
         $(el).attr('srcset', newSrcset);
       }
@@ -191,7 +218,7 @@ export function rewriteHtml(
   $('a').each((_, el) => {
     const href = $(el).attr('href');
     if (href) {
-      $(el).attr('href', makeProxiedUrl(href, targetUrl));
+      $(el).attr('href', makeProxiedUrl(href, targetUrl, options));
     }
   });
 
@@ -199,9 +226,9 @@ export function rewriteHtml(
   $('form').each((_, el) => {
     const action = $(el).attr('action');
     if (action) {
-      $(el).attr('action', makeProxiedUrl(action, targetUrl));
+      $(el).attr('action', makeProxiedUrl(action, targetUrl, options));
     } else {
-      $(el).attr('action', makeProxiedUrl(targetUrl, targetUrl));
+      $(el).attr('action', makeProxiedUrl(targetUrl, targetUrl, options));
     }
   });
 
@@ -209,7 +236,7 @@ export function rewriteHtml(
   $('link').each((_, el) => {
     const href = $(el).attr('href');
     if (href) {
-      $(el).attr('href', makeProxiedUrl(href, targetUrl));
+      $(el).attr('href', makeProxiedUrl(href, targetUrl, options));
     }
   });
 
@@ -218,7 +245,7 @@ export function rewriteHtml(
     $('script[src]').each((_, el) => {
       const src = $(el).attr('src');
       if (src) {
-        $(el).attr('src', makeProxiedUrl(src, targetUrl));
+        $(el).attr('src', makeProxiedUrl(src, targetUrl, options));
       }
     });
   }
@@ -226,25 +253,25 @@ export function rewriteHtml(
   // 8. Rewrite iframes, audio, video, sources
   $('iframe, frame').each((_, el) => {
     const src = $(el).attr('src');
-    if (src) $(el).attr('src', makeProxiedUrl(src, targetUrl));
+    if (src) $(el).attr('src', makeProxiedUrl(src, targetUrl, options));
   });
 
   $('audio, video, source, embed').each((_, el) => {
     const src = $(el).attr('src');
-    if (src) $(el).attr('src', makeProxiedUrl(src, targetUrl));
+    if (src) $(el).attr('src', makeProxiedUrl(src, targetUrl, options));
   });
 
   // 9. Rewrite inline <style> tags
   $('style').each((_, el) => {
     const rawCss = $(el).html();
     if (rawCss) {
-      $(el).html(rewriteCss(rawCss, targetUrl));
+      $(el).html(rewriteCss(rawCss, targetUrl, options));
     }
   });
 
   // 10. Inject Universal Client Hook at top of <head>
   if (options.injectHook !== false && !options.removeScripts) {
-    const hook = generateProxyHook(targetUrl);
+    const hook = generateProxyHook(targetUrl, options);
     if ($('head').length > 0) {
       $('head').prepend(hook);
     } else {
@@ -288,18 +315,47 @@ export async function executeProxyRequest(
 
   // 2. Prepare headers
   const outgoingHeaders: Record<string, string> = {
-    'User-Agent': options.userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
-    'Accept': reqHeaders['accept'] || 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Accept-Language': reqHeaders['accept-language'] || 'en-US,en;q=0.9',
+    'User-Agent': options.userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Accept': reqHeaders['accept'] || 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Language': reqHeaders['accept-language'] || 'fa,en-US;q=0.9,en;q=0.8',
     'Referer': parsedTarget.origin + '/',
     'Origin': parsedTarget.origin,
-    'Sec-Fetch-Dest': 'document',
-    'Sec-Fetch-Mode': 'navigate',
-    'Sec-Fetch-Site': 'same-origin',
-    'Sec-Ch-Ua': '"Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"',
+    'Sec-Fetch-Dest': (reqHeaders['sec-fetch-dest'] as string) || 'document',
+    'Sec-Fetch-Mode': (reqHeaders['sec-fetch-mode'] as string) || 'navigate',
+    'Sec-Fetch-Site': (reqHeaders['sec-fetch-site'] as string) || 'same-origin',
+    'Sec-Ch-Ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
     'Sec-Ch-Ua-Mobile': '?0',
     'Sec-Ch-Ua-Platform': '"Windows"',
   };
+
+  // Forward client request headers (essential for YouTube InnerTube API, Google, modern web apps)
+  for (const [key, val] of Object.entries(reqHeaders)) {
+    const lk = key.toLowerCase();
+    if (
+      lk === 'host' ||
+      lk === 'connection' ||
+      lk === 'content-length' ||
+      lk === 'cookie' ||
+      lk === 'origin' ||
+      lk === 'referer' ||
+      lk.startsWith('sec-fetch-')
+    ) {
+      continue;
+    }
+    if (typeof val === 'string') {
+      outgoingHeaders[key] = val;
+    }
+  }
+
+  // Ensure YouTube InnerTube API requests receive required client identity
+  if (parsedTarget.hostname.includes('youtube.com')) {
+    if (!outgoingHeaders['X-YouTube-Client-Name'] && !outgoingHeaders['x-youtube-client-name']) {
+      outgoingHeaders['X-YouTube-Client-Name'] = '1';
+    }
+    if (!outgoingHeaders['X-YouTube-Client-Version'] && !outgoingHeaders['x-youtube-client-version']) {
+      outgoingHeaders['X-YouTube-Client-Version'] = '2.20241108.01.00';
+    }
+  }
 
   if (cookieHeader) {
     outgoingHeaders['Cookie'] = cookieHeader;

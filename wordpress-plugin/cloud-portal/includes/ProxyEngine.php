@@ -68,12 +68,12 @@ class StealthPortalEngine {
         $sep = (strpos($this->gatewayScript, '?') !== false) ? '&' : '?';
         $streamUrl = $this->gatewayScript . $sep . 'b=' . $payload;
 
-        // Preserve flags in child links
-        if (!empty($options['removeScripts'])) $streamUrl .= '&rs=1';
-        if (!empty($options['removeImages']))  $streamUrl .= '&ri=1';
-        if (!empty($options['stripTitle']))    $streamUrl .= '&st=1';
-        if (!empty($options['showToolbar']))   $streamUrl .= '&tb=1';
-        if (!empty($options['encodeURL']))     $streamUrl .= '&enc=1';
+        // Preserve flags in child links without triggering WordPress reserved query vars
+        if (!empty($options['removeScripts'])) $streamUrl .= '&cp_rs=1';
+        if (!empty($options['removeImages']))  $streamUrl .= '&cp_ri=1';
+        if (!empty($options['stripTitle']))    $streamUrl .= '&cp_st=1';
+        if (!empty($options['showToolbar']))   $streamUrl .= '&cp_tb=1';
+        if (!empty($options['encodeURL']))     $streamUrl .= '&cp_enc=1';
 
         return $streamUrl;
     }
@@ -159,8 +159,8 @@ class StealthPortalEngine {
                 </a>
                 <form action="' . esc_attr($this->gatewayScript) . '" method="GET" style="display:flex; gap:6px; flex:1; margin:0;" onsubmit="if(!this.b.value.match(/^https?:/i)) this.b.value=\'https://\'+this.b.value;">
                     <input type="text" name="b" value="' . $rawTarget . '" style="flex:1; background:#1e293b; border:1px solid #475569; color:#f8fafc; padding:4px 10px; border-radius:6px; font-size:12px; font-family:monospace; outline:none;" placeholder="https://...">
-                    <input type="hidden" name="tb" value="1">
-                    ' . ($encChecked ? '<input type="hidden" name="enc" value="1">' : '') . '
+                    <input type="hidden" name="cp_tb" value="1">
+                    ' . ($encChecked ? '<input type="hidden" name="cp_enc" value="1">' : '') . '
                     <button type="submit" style="background:#2563eb; color:#fff; border:none; padding:4px 12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px; white-space:nowrap;">
                         برو ↵
                     </button>
@@ -168,16 +168,16 @@ class StealthPortalEngine {
             </div>
             <div style="display:flex; align-items:center; gap:12px; font-size:11px; color:#cbd5e1; margin-right:12px;">
                 <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
-                    <input type="checkbox" ' . $encChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'enc\',\'1\'):u.searchParams.delete(\'enc\'); window.location.href=u.href;"> کدگذاری آدرس
+                    <input type="checkbox" ' . $encChecked . ' onclick="var u=new URL(window.location.href); u.searchParams.delete(\'tb\'); this.checked?u.searchParams.set(\'cp_enc\',\'1\'):u.searchParams.delete(\'cp_enc\'); window.location.href=u.href;"> کدگذاری آدرس
                 </label>
                 <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
-                    <input type="checkbox" ' . $stChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'st\',\'1\'):u.searchParams.delete(\'st\'); window.location.href=u.href;"> پنهان‌سازی عنوان
+                    <input type="checkbox" ' . $stChecked . ' onclick="var u=new URL(window.location.href); u.searchParams.delete(\'tb\'); this.checked?u.searchParams.set(\'cp_st\',\'1\'):u.searchParams.delete(\'cp_st\'); window.location.href=u.href;"> پنهان‌سازی عنوان
                 </label>
                 <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
-                    <input type="checkbox" ' . $rsChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'rs\',\'1\'):u.searchParams.delete(\'rs\'); window.location.href=u.href;"> حذف اسکریپت
+                    <input type="checkbox" ' . $rsChecked . ' onclick="var u=new URL(window.location.href); u.searchParams.delete(\'tb\'); this.checked?u.searchParams.set(\'cp_rs\',\'1\'):u.searchParams.delete(\'cp_rs\'); window.location.href=u.href;"> حذف اسکریپت
                 </label>
                 <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
-                    <input type="checkbox" ' . $riChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'ri\',\'1\'):u.searchParams.delete(\'ri\'); window.location.href=u.href;"> حذف تصویر
+                    <input type="checkbox" ' . $riChecked . ' onclick="var u=new URL(window.location.href); u.searchParams.delete(\'tb\'); this.checked?u.searchParams.set(\'cp_ri\',\'1\'):u.searchParams.delete(\'cp_ri\'); window.location.href=u.href;"> حذف تصویر
                 </label>
                 <button type="button" onclick="window.__togglePortalToolbar()" style="background:#334155; color:#94a3b8; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;" title="بستن نوار ابزار">
                     ✕

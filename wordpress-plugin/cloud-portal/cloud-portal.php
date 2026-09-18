@@ -81,12 +81,29 @@ class CloudPortalWordPressPlugin {
                     isset($_GET['_view']) || isset($_POST['_view']) ||
                     isset($_GET['newglype_gateway']) || isset($_POST['newglype_gateway']);
 
+        // Neutralize WordPress core trackback conflict: WordPress reserves 'tb' for trackbacks!
+        // If 'tb' exists in query string, WordPress runs wp-trackback.php and returns XML error.
+        if (isset($_GET['tb'])) {
+            if (!isset($_GET['cp_tb'])) {
+                $_GET['cp_tb'] = $_GET['tb'];
+            }
+            unset($_GET['tb']);
+            unset($_REQUEST['tb']);
+        }
+        if (isset($_GET['st'])) {
+            if (!isset($_GET['cp_st'])) {
+                $_GET['cp_st'] = $_GET['st'];
+            }
+            unset($_GET['st']);
+            unset($_REQUEST['st']);
+        }
+
         if (!$isPortal) {
             return;
         }
 
         $gatewayUrl = add_query_arg(['_portal' => '1'], home_url('/'));
-        $tempCookies = (isset($_GET['temp']) && $_GET['temp'] == '1') || (isset($_POST['temp']) && $_POST['temp'] == '1');
+        $tempCookies = (isset($_GET['cp_temp']) && $_GET['cp_temp'] == '1') || (isset($_GET['temp']) && $_GET['temp'] == '1') || (isset($_POST['temp']) && $_POST['temp'] == '1');
         $engine = new StealthPortalEngine($gatewayUrl, $tempCookies);
 
         // 1. Handle Cookie Synchronization Beacon
@@ -119,13 +136,13 @@ class CloudPortalWordPressPlugin {
             $targetUrl = 'https://' . $targetUrl;
         }
 
-        // 3. Extract browsing flags
+        // 3. Extract browsing flags (supports both cp_ prefixed and legacy flags)
         $options = [
-            'removeScripts' => (isset($_GET['rs']) && $_GET['rs'] == '1') || (get_option('cloud_portal_remove_scripts', '0') === '1'),
-            'removeImages'  => (isset($_GET['ri']) && $_GET['ri'] == '1') || (get_option('cloud_portal_remove_images', '0') === '1'),
-            'stripTitle'    => (isset($_GET['st']) && $_GET['st'] == '1') || (get_option('cloud_portal_strip_title', '0') === '1'),
-            'showToolbar'   => (isset($_GET['tb']) && $_GET['tb'] == '1') || (get_option('cloud_portal_show_toolbar', '1') === '1'),
-            'encodeURL'     => (isset($_GET['enc']) && $_GET['enc'] == '1') || (get_option('cloud_portal_encode_url', '1') === '1'),
+            'removeScripts' => (isset($_GET['cp_rs']) && $_GET['cp_rs'] == '1') || (isset($_GET['rs']) && $_GET['rs'] == '1') || (get_option('cloud_portal_remove_scripts', '0') === '1'),
+            'removeImages'  => (isset($_GET['cp_ri']) && $_GET['cp_ri'] == '1') || (isset($_GET['ri']) && $_GET['ri'] == '1') || (get_option('cloud_portal_remove_images', '0') === '1'),
+            'stripTitle'    => (isset($_GET['cp_st']) && $_GET['cp_st'] == '1') || (isset($_GET['st']) && $_GET['st'] == '1') || (get_option('cloud_portal_strip_title', '0') === '1'),
+            'showToolbar'   => (isset($_GET['cp_tb']) && $_GET['cp_tb'] == '1') || (isset($_GET['tb']) && $_GET['tb'] == '1') || (get_option('cloud_portal_show_toolbar', '1') === '1'),
+            'encodeURL'     => (isset($_GET['cp_enc']) && $_GET['cp_enc'] == '1') || (isset($_GET['enc']) && $_GET['enc'] == '1') || (get_option('cloud_portal_encode_url', '1') === '1'),
         ];
 
         $method = $_SERVER['REQUEST_METHOD'];
@@ -229,7 +246,29 @@ class CloudPortalWordPressPlugin {
                 </span>
             </div>
 
-            <form action="<?php echo esc_url(home_url('/')); ?>" method="GET" style="margin: 0;">
+            <form action="<?php echo esc_url(home_url('/')); ?>" method="GET" style="margin: 0;" onsubmit="
+                var input = this.querySelector('input[name=b]');
+                var encBox = this.querySelector('input[name=cp_enc]');
+                if (input && input.value) {
+                    var v = input.value.trim();
+                    if (!v.match(/^https?:/i)) v = 'https://' + v;
+                    if (encBox && encBox.checked) {
+                        try {
+                            var key = 'cp_vault_key';
+                            var out = [];
+                            for (var i = 0; i < v.length; i++) {
+                                out.push(String.fromCharCode(v.charCodeAt(i) ^ key.charCodeAt(i % key.length)));
+                            }
+                            var b64 = btoa(out.join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                            input.value = b64;
+                        } catch(e) {
+                            input.value = v;
+                        }
+                    } else {
+                        input.value = v;
+                    }
+                }
+            ">
                 <input type="hidden" name="_portal" value="1">
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
@@ -253,22 +292,22 @@ class CloudPortalWordPressPlugin {
                     <div style="font-size: 11px; font-weight: bold; color: #94a3b8; margin-bottom: 8px;">گزینه‌های پیشرفته (Glype Options):</div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; font-size: 11px; color: #cbd5e1;">
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" name="enc" value="1" <?php checked($defaultEnc); ?>> کدگذاری آدرس (Encode URL)
+                            <input type="checkbox" name="cp_enc" value="1" <?php checked($defaultEnc); ?>> کدگذاری آدرس (Encode URL)
                         </label>
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" name="tb" value="1" <?php checked($defaultTb); ?>> نوار ابزار بالا (Mini Toolbar)
+                            <input type="checkbox" name="cp_tb" value="1" <?php checked($defaultTb); ?>> نوار ابزار بالا (Mini Toolbar)
                         </label>
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" name="st" value="1" <?php checked($defaultSt); ?>> پنهان‌سازی عنوان (Strip Title)
+                            <input type="checkbox" name="cp_st" value="1" <?php checked($defaultSt); ?>> پنهان‌سازی عنوان (Strip Title)
                         </label>
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" name="rs" value="1" <?php checked($defaultRs); ?>> حذف اسکریپت‌ها (No Scripts)
+                            <input type="checkbox" name="cp_rs" value="1" <?php checked($defaultRs); ?>> حذف اسکریپت‌ها (No Scripts)
                         </label>
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" name="ri" value="1" <?php checked($defaultRi); ?>> عدم لود تصاویر (No Images)
+                            <input type="checkbox" name="cp_ri" value="1" <?php checked($defaultRi); ?>> عدم لود تصاویر (No Images)
                         </label>
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" name="temp" value="1"> کوکی‌های موقت (Temp Cookies)
+                            <input type="checkbox" name="cp_temp" value="1"> کوکی‌های موقت (Temp Cookies)
                         </label>
                     </div>
                 </div>
@@ -283,7 +322,7 @@ class CloudPortalWordPressPlugin {
                     ];
                     foreach ($presets as $name => $u):
                         $enc = StealthCipher::encode($u);
-                        $pUrl = add_query_arg(['_portal' => '1', 'b' => $enc, 'enc' => '1', 'tb' => '1'], home_url('/'));
+                        $pUrl = add_query_arg(['_portal' => '1', 'b' => $enc, 'cp_enc' => '1', 'cp_tb' => '1'], home_url('/'));
                     ?>
                         <a href="<?php echo esc_url($pUrl); ?>" style="color: #60a5fa; text-decoration: none; background: #1e293b; padding: 3px 8px; border-radius: 6px;">
                             <?php echo esc_html($name); ?>

@@ -48,11 +48,11 @@ if (!preg_match('#^https?://#i', $targetUrl)) {
 
 // Extract browsing flags matching Glype options
 $options = [
-    'removeScripts' => (isset($_GET['rs']) && $_GET['rs'] == '1') || (isset($_POST['removeScripts']) && $_POST['removeScripts'] == '1'),
-    'removeImages'  => (isset($_GET['ri']) && $_GET['ri'] == '1') || (isset($_POST['removeImages']) && $_POST['removeImages'] == '1'),
-    'stripTitle'    => (isset($_GET['st']) && $_GET['st'] == '1') || (isset($_POST['stripTitle']) && $_POST['stripTitle'] == '1'),
-    'showToolbar'   => (isset($_GET['tb']) && $_GET['tb'] == '1') || (isset($_POST['showToolbar']) && $_POST['showToolbar'] == '1'),
-    'encodeURL'     => (isset($_GET['enc']) && $_GET['enc'] == '1') || (isset($_POST['encodeURL']) && $_POST['encodeURL'] == '1'),
+    'removeScripts' => (isset($_GET['cp_rs']) && $_GET['cp_rs'] == '1') || (isset($_GET['rs']) && $_GET['rs'] == '1') || (isset($_POST['removeScripts']) && $_POST['removeScripts'] == '1'),
+    'removeImages'  => (isset($_GET['cp_ri']) && $_GET['cp_ri'] == '1') || (isset($_GET['ri']) && $_GET['ri'] == '1') || (isset($_POST['removeImages']) && $_POST['removeImages'] == '1'),
+    'stripTitle'    => (isset($_GET['cp_st']) && $_GET['cp_st'] == '1') || (isset($_GET['st']) && $_GET['st'] == '1') || (isset($_POST['stripTitle']) && $_POST['stripTitle'] == '1'),
+    'showToolbar'   => (isset($_GET['cp_tb']) && $_GET['cp_tb'] == '1') || (isset($_GET['tb']) && $_GET['tb'] == '1') || (isset($_POST['showToolbar']) && $_POST['showToolbar'] == '1'),
+    'encodeURL'     => (isset($_GET['cp_enc']) && $_GET['cp_enc'] == '1') || (isset($_GET['enc']) && $_GET['enc'] == '1') || (isset($_POST['encodeURL']) && $_POST['encodeURL'] == '1'),
 ];
 
 $method = $_SERVER['REQUEST_METHOD'];
