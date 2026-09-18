@@ -4,6 +4,7 @@ Cloud Portal - Automated Versioned Packaging Script
 Packages:
  1. Standalone PHP Host Package -> cloud-portal-php-v{VERSION}.zip (& releases/)
  2. WordPress Plugin Package    -> cloud-portal-wp-v{VERSION}.zip (& releases/)
+ 3. Full Project Archive        -> cloud-portal-full-v{VERSION}.zip (& releases/)
 Also keeps unversioned symlinks/copies (cloud-portal-php.zip, cloud-portal-wp.zip) for persistent permalinks.
 Updates /releases/manifest.json with all built releases, timestamps, and checksums.
 """
@@ -69,6 +70,31 @@ def get_sha256(file_path):
             sha.update(chunk)
     return sha.hexdigest()
 
+# Helper to check if path should be excluded from full archive
+def should_exclude(path, root_dir):
+    """Exclude build artifacts, node_modules, dist, and hidden files from full archive"""
+    rel_path = os.path.relpath(path, root_dir)
+    exclude_patterns = [
+        'node_modules',
+        'dist',
+        '.git',
+        '.vscode',
+        '__pycache__',
+        '.env',
+        '*.log',
+        'releases',  # We don't want to include old releases in the full archive
+        'public/releases'
+    ]
+    for pattern in exclude_patterns:
+        if pattern in rel_path:
+            return True
+    # Exclude hidden files/directories
+    parts = rel_path.split(os.sep)
+    for part in parts:
+        if part.startswith('.') and part not in ['.gitkeep']:
+            return True
+    return False
+
 # 2. Package Standalone PHP Host Bundle
 source_php = os.path.join(ROOT_DIR, "php-package")
 php_versioned_name = f"cloud-portal-php-v{version_str}.zip"
@@ -132,7 +158,38 @@ if os.path.exists(DIST_DIR):
 
 print(f"  [OK] WordPress Plugin ZIP: {wp_versioned_name} ({wp_size} bytes)")
 
-# 4. Generate and update manifest.json
+# 4. Package Full Project Archive (all source files)
+full_versioned_name = f"cloud-portal-full-v{version_str}.zip"
+full_release_path = os.path.join(RELEASES_DIR, full_versioned_name)
+full_public_versioned = os.path.join(PUBLIC_RELEASES_DIR, full_versioned_name)
+
+print(f"Packaging Full Project Archive: {ROOT_DIR} -> {full_versioned_name} ...")
+with zipfile.ZipFile(full_release_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    for root, dirs, files in os.walk(ROOT_DIR):
+        # Filter out excluded directories
+        dirs[:] = [d for d in dirs if not should_exclude(os.path.join(root, d), ROOT_DIR)]
+        for file in files:
+            file_path = os.path.join(root, file)
+            if should_exclude(file_path, ROOT_DIR):
+                continue
+            arcname = os.path.relpath(file_path, ROOT_DIR)
+            zipf.write(file_path, arcname)
+
+full_size = os.path.getsize(full_release_path)
+full_hash = get_sha256(full_release_path)
+
+# Copy to public/releases/
+shutil.copy2(full_release_path, full_public_versioned)
+shutil.copy2(full_release_path, os.path.join(PUBLIC_DIR, "cloud-portal-full.zip"))
+shutil.copy2(full_release_path, os.path.join(ROOT_DIR, "cloud-portal-full.zip"))
+
+if os.path.exists(DIST_DIR):
+    shutil.copy2(full_release_path, os.path.join(DIST_DIR, "cloud-portal-full.zip"))
+    shutil.copy2(full_release_path, os.path.join(DIST_DIR, "releases", full_versioned_name))
+
+print(f"  [OK] Full Project ZIP: {full_versioned_name} ({full_size} bytes)")
+
+# 5. Generate and update manifest.json
 manifest_file = os.path.join(RELEASES_DIR, "manifest.json")
 manifest = {"latest": version_str, "releases": []}
 if os.path.exists(manifest_file):
@@ -163,6 +220,12 @@ manifest["releases"].insert(0, {
             "url": f"/releases/{wp_versioned_name}",
             "size": wp_size,
             "sha256": wp_hash
+        },
+        "fullProject": {
+            "fileName": full_versioned_name,
+            "url": f"/releases/{full_versioned_name}",
+            "size": full_size,
+            "sha256": full_hash
         }
     }
 })

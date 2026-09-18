@@ -168,7 +168,16 @@
 
     window.addEventListener('submit', function(e) {
       var form = e.target;
-      if (form && form.action && !form.dataset.rewritten) {
+      if (form && form.tagName === 'FORM' && form.action && !form.dataset.rewritten) {
+        form.action = resolveStreamUrl(form.action);
+        form.dataset.rewritten = '1';
+      }
+    }, true);
+    
+    // Also intercept form method and ensure it goes through proxy
+    window.addEventListener('formdata', function(e) {
+      var form = e.form;
+      if (form && form.tagName === 'FORM' && form.action && !form.dataset.rewritten) {
         form.action = resolveStreamUrl(form.action);
         form.dataset.rewritten = '1';
       }
@@ -288,6 +297,16 @@
               if (a && !a.startsWith('#') && !a.startsWith('javascript:') && a.indexOf(gatewayScript) === -1) {
                 node.setAttribute('action', resolveStreamUrl(a));
               }
+            } else if (tag === 'INPUT' || tag === 'BUTTON' || tag === 'TEXTAREA') {
+              // Ensure input/button elements are not blocked by event handlers
+              var onclick = node.getAttribute('onclick');
+              if (onclick && onclick.indexOf('submit') !== -1 && onclick.indexOf(gatewayScript) === -1) {
+                var parentForm = node.closest('form');
+                if (parentForm && parentForm.action && !parentForm.dataset.rewritten) {
+                  parentForm.action = resolveStreamUrl(parentForm.action);
+                  parentForm.dataset.rewritten = '1';
+                }
+              }
             }
             // Check data attributes and child forms/links
             var dataEls = node.querySelectorAll ? node.querySelectorAll('form, a, [data-src], [data-thumb], [data-background], [data-poster], [data-url], [data-image], [data-original], [data-bg]') : [];
@@ -318,6 +337,17 @@
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   } catch(e) {}
+  
+  // 7c. Intercept keydown events for Enter key in forms (Gmail login fix)
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+      var form = e.target.closest('form');
+      if (form && form.action && !form.dataset.rewritten) {
+        form.action = resolveStreamUrl(form.action);
+        form.dataset.rewritten = '1';
+      }
+    }
+  }, true);
 
   // 8. Toolbar UI Toggle Handler
   window.__togglePortalToolbar = function() {
