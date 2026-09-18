@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Globe, Shield, Cookie, Activity, Settings, Cpu, BookOpen, 
   ExternalLink, CheckCircle2, RotateCw, Sparkles, Layers, 
-  HelpCircle, Server, Download
+  HelpCircle, Server, Download, Package
 } from 'lucide-react';
 import { Stats, PluginItem, ProxyConfig } from './types';
 import { BrowserViewport } from './components/BrowserViewport';
@@ -12,9 +12,10 @@ import { ModernizationGuide } from './components/ModernizationGuide';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FreeHostAudit } from './components/FreeHostAudit';
 import { WordPressPluginGuide } from './components/WordPressPluginGuide';
+import { ReleasesManager } from './components/ReleasesManager';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'browser' | 'cookies' | 'network' | 'guide' | 'settings' | 'plugins' | 'host-audit' | 'wordpress'>('browser');
+  const [activeTab, setActiveTab] = useState<'browser' | 'cookies' | 'network' | 'guide' | 'settings' | 'plugins' | 'host-audit' | 'wordpress' | 'releases'>('browser');
   const [stats, setStats] = useState<Stats>({
     totalRequests: 0,
     rewrittenLinks: 0,
@@ -84,23 +85,31 @@ export default function App() {
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   معماری نامحسوس (Stealth)
                 </span>
+                <button
+                  onClick={() => setActiveTab('releases')}
+                  className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition-all flex items-center gap-1 cursor-pointer"
+                  title="مشاهده تاریخچه نسخه‌ها و آرشیو فایل‌های ZIP"
+                >
+                  <Package className="w-3 h-3" />
+                  <span>نسخه v2.1.0</span>
+                </button>
                 <a
-                  href="/api/download-bundle"
-                  download="cloud-portal-php.zip"
+                  href="/releases/cloud-portal-php-v2.1.0.zip"
+                  download="cloud-portal-php-v2.1.0.zip"
                   className="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer border border-emerald-400/30"
-                  title="دانلود فایل zip آماده آپلود روی هاست اشتراکی رایگان PHP"
+                  title="دانلود فایل zip آماده آپلود روی هاست اشتراکی رایگان PHP (v2.1.0)"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>دانلود ZIP هاست رایگان (PHP)</span>
+                  <span>دانلود PHP v2.1.0 (ZIP)</span>
                 </a>
                 <a
-                  href="/api/download-wp-plugin"
-                  download="cloud-portal-wp.zip"
+                  href="/releases/cloud-portal-wp-v2.1.0.zip"
+                  download="cloud-portal-wp-v2.1.0.zip"
                   className="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer border border-blue-400/30"
-                  title="دانلود افزونه اختصاصی وردپرس (cloud-portal-wp.zip)"
+                  title="دانلود افزونه اختصاصی وردپرس (v2.1.0)"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>دانلود افزونه وردپرس (ZIP)</span>
+                  <span>دانلود افزونه وردپرس v2.1.0</span>
                 </a>
               </div>
               <p className="text-xs text-slate-400">
@@ -198,6 +207,17 @@ export default function App() {
             >
               <Sparkles className="w-3.5 h-3.5" /> افزونه وردپرس (WordPress Plugin)
             </button>
+
+            <button
+              onClick={() => setActiveTab('releases')}
+              className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'releases'
+                  ? 'bg-amber-600 text-white shadow-sm'
+                  : 'text-amber-400 hover:bg-slate-800 border border-amber-500/30'
+              }`}
+            >
+              <Package className="w-3.5 h-3.5" /> نسخه‌ها و فایل‌های ZIP (Releases)
+            </button>
           </nav>
         </div>
       </header>
@@ -224,6 +244,8 @@ export default function App() {
         {activeTab === 'host-audit' && <FreeHostAudit />}
 
         {activeTab === 'wordpress' && <WordPressPluginGuide />}
+
+        {activeTab === 'releases' && <ReleasesManager />}
 
         {activeTab === 'plugins' && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">

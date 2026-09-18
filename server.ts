@@ -122,33 +122,72 @@ app.get('/api/network-logs', (req, res) => {
   res.json(networkLogs);
 });
 
-// Download pre-packaged PHP Standalone ZIP for direct cPanel / free host deployment
+// Download pre-packaged PHP Standalone ZIP (supports versioned download)
 app.get('/api/download-bundle', (req, res) => {
-  const preferredPath = path.join(process.cwd(), 'public', 'cloud-portal-php.zip');
-  const legacyPath = path.join(process.cwd(), 'public', 'newglype-php-host.zip');
-  const zipPath = fs.existsSync(preferredPath) ? preferredPath : legacyPath;
+  const version = req.query.version as string;
+  let zipPath = '';
+  let filename = 'cloud-portal-php.zip';
+
+  if (version) {
+    zipPath = path.join(process.cwd(), 'releases', `cloud-portal-php-v${version}.zip`);
+    filename = `cloud-portal-php-v${version}.zip`;
+  }
+
+  if (!zipPath || !fs.existsSync(zipPath)) {
+    const preferredPath = path.join(process.cwd(), 'public', 'cloud-portal-php.zip');
+    const legacyPath = path.join(process.cwd(), 'public', 'newglype-php-host.zip');
+    zipPath = fs.existsSync(preferredPath) ? preferredPath : legacyPath;
+  }
+
   if (fs.existsSync(zipPath)) {
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="cloud-portal-php.zip"');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.sendFile(zipPath);
   } else {
-    res.status(404).json({ error: 'فایل zip هنوز ایجاد نشده است.' });
+    res.status(404).json({ error: 'فایل zip یافت نشد.' });
   }
 });
 
-// Download ready-to-install WordPress Plugin ZIP (cloud-portal-wp.zip or newglype-proxy.zip)
+// Download ready-to-install WordPress Plugin ZIP (supports versioned download)
 app.get('/api/download-wp-plugin', (req, res) => {
-  const preferredPath = path.join(process.cwd(), 'public', 'cloud-portal-wp.zip');
-  const legacyPath = path.join(process.cwd(), 'public', 'newglype-proxy.zip');
-  const zipPath = fs.existsSync(preferredPath) ? preferredPath : legacyPath;
+  const version = req.query.version as string;
+  let zipPath = '';
+  let filename = 'cloud-portal-wp.zip';
+
+  if (version) {
+    zipPath = path.join(process.cwd(), 'releases', `cloud-portal-wp-v${version}.zip`);
+    filename = `cloud-portal-wp-v${version}.zip`;
+  }
+
+  if (!zipPath || !fs.existsSync(zipPath)) {
+    const preferredPath = path.join(process.cwd(), 'public', 'cloud-portal-wp.zip');
+    const legacyPath = path.join(process.cwd(), 'public', 'newglype-proxy.zip');
+    zipPath = fs.existsSync(preferredPath) ? preferredPath : legacyPath;
+  }
+
   if (fs.existsSync(zipPath)) {
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="cloud-portal-wp.zip"');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.sendFile(zipPath);
   } else {
     res.status(404).json({ error: 'فایل افزونه وردپرس یافت نشد.' });
   }
 });
+
+// Releases Manifest & Versioning API
+app.get('/api/releases', (req, res) => {
+  const manifestPath = path.join(process.cwd(), 'releases', 'manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      return res.json(data);
+    } catch (e) {}
+  }
+  res.json({ latest: '2.1.0', releases: [] });
+});
+
+// Serve direct downloads from /releases/* folder
+app.use('/releases', express.static(path.join(process.cwd(), 'releases')));
 
 // --- Cookie Jar APIs ---
 app.get('/api/cookies', async (req, res) => {

@@ -71,12 +71,12 @@ export const FreeHostAudit: React.FC = () => {
         </div>
 
         <a
-          href="/api/download-bundle"
-          download="newglype-php-host.zip"
+          href="/releases/cloud-portal-php-v2.1.0.zip"
+          download="cloud-portal-php-v2.1.0.zip"
           className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-emerald-500/30 transition-all cursor-pointer shrink-0"
         >
           <Download className="w-5 h-5 text-slate-950" />
-          <span>دانلود فایل ZIP (newglype-php-host.zip)</span>
+          <span>دانلود بسته مستقل PHP (v2.1.0)</span>
         </a>
       </div>
 

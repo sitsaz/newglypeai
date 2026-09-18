@@ -1,0 +1,30 @@
+{
+  "latest": "2.1.0",
+  "releases": [
+    {
+      "version": "2.1.0",
+      "date": "2026-09-18T04:00:25Z",
+      "changelog": [
+        "رفع کامل تداخل خطای XML رهگیری و ترک‌بک وردپرس (تبدیل پارامترها به پیشوند اختصاصی cp_)",
+        "پشتیبانی کامل از بارگذاری پویا و درخواست‌های InnerTube یوتیوب (YouTube) و استریم تامبنیل‌ها",
+        "فعال‌سازی پیش‌فرض کدگذاری آدرس‌ها (Stealth URL Cipher) در نوار جستجو و فرم‌های پرتال",
+        "نسخه‌بندی هوشمند و خودکار فایل‌های ZIP مستقل PHP و افزونه وردپرس همراه با آرشیو نسخه‌های قبلی"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v2.1.0.zip",
+          "url": "/releases/cloud-portal-php-v2.1.0.zip",
+          "size": 20481,
+          "sha256": "2ac4ca72ab9a08cd768e6d9553730c829586dd7c9458375afbc294981e3e88dc"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v2.1.0.zip",
+          "url": "/releases/cloud-portal-wp-v2.1.0.zip",
+          "size": 19936,
+          "sha256": "921f7468bfc30350f13f2ee00da25991dbf2886948d6c22ec5752b748b9b9b1f"
+        }
+      }
+    }
+  ],
+  "lastUpdated": "2026-09-18T04:00:25Z"
+}

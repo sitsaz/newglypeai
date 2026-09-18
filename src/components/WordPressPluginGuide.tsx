@@ -32,15 +32,15 @@ export const WordPressPluginGuide: React.FC = () => {
 
         <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
           <a
-            href="/api/download-wp-plugin"
-            download="cloud-portal-wp.zip"
+            href="/releases/cloud-portal-wp-v2.1.0.zip"
+            download="cloud-portal-wp-v2.1.0.zip"
             className="px-6 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 transition-all cursor-pointer border border-blue-300/30"
-            title="دانلود نسخه استاندارد وردپرس"
+            title="دانلود نسخه استاندارد وردپرس v2.1.0"
           >
             <Download className="w-4 h-4 text-white" />
-            <span>دانلود افزونه وردپرس (cloud-portal-wp.zip)</span>
+            <span>دانلود افزونه وردپرس (v2.1.0)</span>
           </a>
-          <span className="text-[11px] text-slate-400 text-center">پکیج استاندارد آماده آپلود در پیشخوان</span>
+          <span className="text-[11px] text-slate-400 text-center">پکیج cloud-portal-wp-v2.1.0.zip آماده آپلود</span>
         </div>
       </div>
 
