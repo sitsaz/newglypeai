@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit; // Prevent direct access
 }
 
-define('CLOUD_PORTAL_VERSION', '21.0.0');
+define('CLOUD_PORTAL_VERSION', '23.0.0');
 define('CLOUD_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('CLOUD_PORTAL_URL', plugin_dir_url(__FILE__));
 define('CLOUD_PORTAL_SESSIONS_DIR', CLOUD_PORTAL_DIR . 'user-sessions/');

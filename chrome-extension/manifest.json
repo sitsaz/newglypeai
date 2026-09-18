@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Cloud Portal Session Exporter",
-  "version": "19.0.0",
+  "version": "23.0.0",
   "description": "Export cookies and sessions from current tab as a downloadable file for manual import into Cloud Portal Proxy",
   "permissions": ["cookies", "activeTab", "scripting", "downloads"],
   "host_permissions": ["<all_urls>"],

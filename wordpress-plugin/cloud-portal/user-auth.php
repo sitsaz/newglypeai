@@ -149,7 +149,15 @@ function cp_handle_upload_session() {
     $data = json_decode($cookiesJson, true);
     
     if (!$data || !is_array($data)) {
-        wp_send_json_error(['message' => 'داده‌های نامعتبر: فرمت JSON صحیح نیست. ورودی: ' . substr($cookiesJson, 0, 100)]);
+        wp_send_json_error(['message' => 'داده‌های نامعتبر: فرمت JSON صحیح نیست']);
+        return;
+    }
+    
+    // Extract cookies array from the exported data
+    $cookies = isset($data['cookies']) && is_array($data['cookies']) ? $data['cookies'] : $data;
+    
+    if (!is_array($cookies) || empty($cookies)) {
+        wp_send_json_error(['message' => 'آرایه کوکی‌ها یافت نشد یا خالی است']);
         return;
     }
     
@@ -167,7 +175,7 @@ function cp_handle_upload_session() {
     $importedCount = 0;
     $failedCount = 0;
     
-    foreach ($data as $cookie) {
+    foreach ($cookies as $cookie) {
         if (!isset($cookie['name']) || !isset($cookie['value'])) {
             $failedCount++;
             continue;
@@ -181,10 +189,10 @@ function cp_handle_upload_session() {
             'path' => $cookie['path'] ?? '/',
             'secure' => $cookie['secure'] ?? false,
             'httpOnly' => $cookie['httpOnly'] ?? false,
-            'sameSite' => $cookie['sameSite'] ?? 'Lax',
+            'sameSite' => ($cookie['sameSite'] ?? '') === 'unspecified' ? 'Lax' : ($cookie['sameSite'] ?? 'Lax'),
             'expirationDate' => $cookie['expirationDate'] ?? null,
             'imported_at' => time(),
-            'source_url' => ''
+            'source_url' => isset($data['url']) ? $data['url'] : ''
         ];
         
         if (file_put_contents($cookieFile, json_encode($cookieData))) {
@@ -305,7 +313,7 @@ function cp_load_user_sessions($cookieJar) {
                 'expires' => $cookieData['expirationDate'] ?? null,
                 'secure' => $cookieData['secure'] ?? false,
                 'httpOnly' => $cookieData['httpOnly'] ?? false,
-                'sameSite' => $cookieData['sameSite'] ?? 'Lax',
+                'sameSite' => ($cookieData['sameSite'] ?? '') === 'unspecified' ? 'Lax' : ($cookieData['sameSite'] ?? 'Lax'),
                 'created' => $cookieData['imported_at'] ?? time()
             ];
         }
