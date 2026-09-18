@@ -1,8 +1,8 @@
 export interface Stats {
   totalRequests: number;
-  bandwidthSaved: string;
-  activeSessions: number;
-  blockedAds: number;
+  rewrittenLinks: number;
+  blockedSecurityHeaders: number;
+  activeCookies: number;
 }
 
 export interface PluginItem {
@@ -12,9 +12,32 @@ export interface PluginItem {
   desc: string;
 }
 
-export interface ProxyOptions {
+export interface DetailedCookie {
+  domain: string;
+  path: string;
+  key: string;
+  value: string;
+  expires?: string;
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite?: string;
+}
+
+export interface NetworkLogItem {
+  id: string;
+  timestamp: string;
+  method: string;
+  url: string;
+  status: number;
+  contentType: string;
+  durationMs: number;
+  sizeBytes: number;
+}
+
+export interface ProxyConfig {
   removeScripts: boolean;
   removeImages: boolean;
   userAgent: string;
-  encryptUrl: boolean;
+  stripSecurityHeaders: boolean;
+  injectHook: boolean;
 }
