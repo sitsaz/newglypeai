@@ -1,20 +1,25 @@
 document.addEventListener('DOMContentLoaded', function() {
     const exportBtn = document.getElementById('exportBtn');
-    const statusDiv = document.getElementById('status');
+    const exportStatus = document.getElementById('exportStatus');
+    const fileInfo = document.getElementById('fileInfo');
 
-    function showStatus(message, isError = false) {
-        statusDiv.textContent = message;
-        statusDiv.style.display = 'block';
-        statusDiv.style.background = isError ? 'rgba(255,0,0,0.3)' : 'rgba(0,255,0,0.3)';
+    function showStatus(element, message, isError = false) {
+        element.textContent = message;
+        element.style.display = 'block';
+        element.style.background = isError ? 'rgba(255,0,0,0.3)' : 'rgba(0,255,0,0.3)';
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 5000);
     }
 
+    // Export handler - downloads cookies as a JSON file
     exportBtn.addEventListener('click', async function() {
         try {
             // Get current tab
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
             if (!tab || !tab.url) {
-                showStatus('No active tab found!', true);
+                showStatus(exportStatus, 'No active tab found!', true);
                 return;
             }
 
@@ -26,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const cookies = await chrome.cookies.getAll({ domain: domain });
             
             if (cookies.length === 0) {
-                showStatus('No cookies found for this domain!', true);
+                showStatus(exportStatus, 'No cookies found for this domain!', true);
                 return;
             }
 
@@ -47,26 +52,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 }))
             };
 
-            // Create and download JSON file
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            // Create a blob and download the file
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const fileName = `cloud-portal-session-${domain}-${new Date().getTime()}.json`;
+
+            // Use Chrome downloads API to save the file
             const downloadUrl = URL.createObjectURL(blob);
             
-            const filename = `cloud-portal-session-${domain}-${Date.now()}.json`;
-            
-            await chrome.downloads.download({
+            chrome.downloads.download({
                 url: downloadUrl,
-                filename: filename,
+                filename: fileName,
                 saveAs: true
+            }, function(downloadId) {
+                if (chrome.runtime.lastError) {
+                    throw new Error(chrome.runtime.lastError.message);
+                }
+                showStatus(exportStatus, `✅ Exported ${cookies.length} cookies to file!`);
+                fileInfo.textContent = `File: ${fileName}`;
+                fileInfo.style.display = 'block';
             });
-
-            showStatus(`✅ Exported ${cookies.length} cookies!`);
-            
-            // Clean up
-            setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
             
         } catch (error) {
             console.error('Export error:', error);
-            showStatus('Error: ' + error.message, true);
+            showStatus(exportStatus, 'Error: ' + error.message, true);
         }
     });
 });

@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Cloud Portal Session Importer",
-  "version": "1.0.0",
-  "description": "Export cookies and sessions from current tab to import into Cloud Portal Proxy",
-  "permissions": ["cookies", "activeTab", "scripting"],
+  "name": "Cloud Portal Session Exporter",
+  "version": "19.0.0",
+  "description": "Export cookies and sessions from current tab as a downloadable file for manual import into Cloud Portal Proxy",
+  "permissions": ["cookies", "activeTab", "scripting", "downloads"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
@@ -17,5 +17,8 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
   }
 }

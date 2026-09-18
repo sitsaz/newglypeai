@@ -1,9 +1,150 @@
 {
-  "latest": "17.0.0",
+  "latest": "19.0.0",
   "releases": [
     {
-      "version": "17.0.0",
-      "date": "2026-09-18T08:45:58Z",
+      "version": "19.0.0",
+      "date": "2026-09-18T10:24:28Z",
+      "changelog": [
+        {
+          "version": "19.0.0",
+          "date": "2026-09-18T10:24:28.364664+00:00",
+          "changes": [
+            "cloud-portal-chrome-ext-v19.0.0.zip"
+          ]
+        },
+        {
+          "version": "chrome-extension",
+          "date": "2026-09-18T10:24:25.514349+00:00",
+          "changes": [
+            "cloud-portal-chrome-ext-v19.0.0.zip"
+          ]
+        },
+        {
+          "version": "17.0.0",
+          "date": "2026-09-18T08:45:58.925228+00:00",
+          "changes": [
+            "افزودن افزونه کروم برای استخراج کوکی و سشن"
+          ]
+        },
+        {
+          "version": "15.0.0",
+          "date": "2026-09-18T08:26:05.896106+00:00",
+          "changes": [
+            "همگام‌سازی کامل هسته پروکسی با لایه سازگاری برای نسخه standalone بدون وابستگی به وردپرس"
+          ]
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-09-18T07:55:28.370548+00:00",
+          "changes": [
+            "افزودن تابع makeProxiedUrl برای بازنویسی هدر Location و رفع خطای 500 در نسخه standalone"
+          ]
+        },
+        {
+          "version": "8.0.0",
+          "date": "2026-09-18T07:44:43.287551+00:00",
+          "changes": [
+            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
+          ]
+        }
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v19.0.0.zip",
+          "url": "/releases/cloud-portal-php-v19.0.0.zip",
+          "size": 25315,
+          "sha256": "01f06b5a16d6d20d8f1a729079067a0c4c4436625705847de5e5a1f0f398fe1a"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v19.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v19.0.0.zip",
+          "size": 25088,
+          "sha256": "9d0aef75b5a664eb6c9599a0bbfd83ead75348fb8c850d0e7c54c74dd9afba27"
+        },
+        "chromeExtension": {
+          "fileName": "cloud-portal-chrome-ext-v19.0.0.zip",
+          "url": "/releases/cloud-portal-chrome-ext-v19.0.0.zip",
+          "size": 4775,
+          "sha256": "2e379169b327b8babd312d705f9cdb27fadf03198705882cf9d48aeb5b4babe9"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-v19.0.0.zip",
+          "url": "/releases/cloud-portal-full-v19.0.0.zip",
+          "size": 312722,
+          "sha256": "15d3fe5e8644ccc27a0c866215375df20b7572a5383e205f69490a83c6745157"
+        }
+      }
+    },
+    {
+      "version": "chrome-extension",
+      "date": "2026-09-18T10:24:25Z",
+      "changelog": [
+        {
+          "version": "chrome-extension",
+          "date": "2026-09-18T10:24:25.514349+00:00",
+          "changes": [
+            "cloud-portal-chrome-ext-v19.0.0.zip"
+          ]
+        },
+        {
+          "version": "17.0.0",
+          "date": "2026-09-18T08:45:58.925228+00:00",
+          "changes": [
+            "افزودن افزونه کروم برای استخراج کوکی و سشن"
+          ]
+        },
+        {
+          "version": "15.0.0",
+          "date": "2026-09-18T08:26:05.896106+00:00",
+          "changes": [
+            "همگام‌سازی کامل هسته پروکسی با لایه سازگاری برای نسخه standalone بدون وابستگی به وردپرس"
+          ]
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-09-18T07:55:28.370548+00:00",
+          "changes": [
+            "افزودن تابع makeProxiedUrl برای بازنویسی هدر Location و رفع خطای 500 در نسخه standalone"
+          ]
+        },
+        {
+          "version": "8.0.0",
+          "date": "2026-09-18T07:44:43.287551+00:00",
+          "changes": [
+            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
+          ]
+        }
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-vchrome-extension.zip",
+          "url": "/releases/cloud-portal-php-vchrome-extension.zip",
+          "size": 25315,
+          "sha256": "01f06b5a16d6d20d8f1a729079067a0c4c4436625705847de5e5a1f0f398fe1a"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-vchrome-extension.zip",
+          "url": "/releases/cloud-portal-wp-vchrome-extension.zip",
+          "size": 25085,
+          "sha256": "1568abf39304b444309bb044db879eb0e6a1877607a9eb0de1e36d87ee714961"
+        },
+        "chromeExtension": {
+          "fileName": "cloud-portal-chrome-ext-vchrome-extension.zip",
+          "url": "/releases/cloud-portal-chrome-ext-vchrome-extension.zip",
+          "size": 4775,
+          "sha256": "2e379169b327b8babd312d705f9cdb27fadf03198705882cf9d48aeb5b4babe9"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-vchrome-extension.zip",
+          "url": "/releases/cloud-portal-full-vchrome-extension.zip",
+          "size": 312710,
+          "sha256": "499b47fa3488eed867fd0ff96d37ea8c8f388d44a15e94bbe2b51b48bc52357b"
+        }
+      }
+    },
+    {
+      "version": "18.0.0",
+      "date": "2026-09-18T09:13:25Z",
       "changelog": [
         {
           "version": "17.0.0",
@@ -36,125 +177,31 @@
       ],
       "files": {
         "phpStandalone": {
-          "fileName": "cloud-portal-php-v17.0.0.zip",
-          "url": "/releases/cloud-portal-php-v17.0.0.zip",
-          "size": 24164,
-          "sha256": "1fc88653c0962c156e2e7e7ea7be67147fa1a71cbc0074fd5c0dc2ba1cba2839"
+          "fileName": "cloud-portal-php-v18.0.0.zip",
+          "url": "/releases/cloud-portal-php-v18.0.0.zip",
+          "size": 25315,
+          "sha256": "fdc62e3a2cceae9214c536817f00b91fb1bc6eb705abfc19d15269f9c055214e"
         },
         "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v17.0.0.zip",
-          "url": "/releases/cloud-portal-wp-v17.0.0.zip",
-          "size": 23904,
-          "sha256": "16fc02cf81b2029f002db339ae6f6ced90f86749325da24861e7377a7f18d7ae"
+          "fileName": "cloud-portal-wp-v18.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v18.0.0.zip",
+          "size": 25082,
+          "sha256": "0b862c286490604960b2a659d9e91950fd1c228dd934fc009aa15046d902135b"
         },
         "chromeExtension": {
-          "fileName": "cloud-portal-chrome-ext-v17.0.0.zip",
-          "url": "/releases/cloud-portal-chrome-ext-v17.0.0.zip",
-          "size": 4055,
-          "sha256": "91468b646a018f264c2178d4e9e343e4a1de83c44394938aa1346aeda59f43c6"
+          "fileName": "cloud-portal-chrome-ext-v18.0.0.zip",
+          "url": "/releases/cloud-portal-chrome-ext-v18.0.0.zip",
+          "size": 5480,
+          "sha256": "2130a6a2d01ddf7e2864d7cdd7f639ecf0b4586f687fb1462cc8f80f8af8a7d7"
         },
         "fullProject": {
-          "fileName": "cloud-portal-full-v17.0.0.zip",
-          "url": "/releases/cloud-portal-full-v17.0.0.zip",
-          "size": 308302,
-          "sha256": "64fae4bb0154ea9fa5589cb25cd41fec80c936e0b2db8586b7fc9efebb9a9af8"
-        }
-      }
-    },
-    {
-      "version": "16.0.0",
-      "date": "2026-09-18T08:44:57Z",
-      "changelog": [
-        {
-          "version": "15.0.0",
-          "date": "2026-09-18T08:26:05.896106+00:00",
-          "changes": [
-            "همگام‌سازی کامل هسته پروکسی با لایه سازگاری برای نسخه standalone بدون وابستگی به وردپرس"
-          ]
-        },
-        {
-          "version": "10.0.0",
-          "date": "2026-09-18T07:55:28.370548+00:00",
-          "changes": [
-            "افزودن تابع makeProxiedUrl برای بازنویسی هدر Location و رفع خطای 500 در نسخه standalone"
-          ]
-        },
-        {
-          "version": "8.0.0",
-          "date": "2026-09-18T07:44:43.287551+00:00",
-          "changes": [
-            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
-          ]
-        }
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v16.0.0.zip",
-          "url": "/releases/cloud-portal-php-v16.0.0.zip",
-          "size": 24164,
-          "sha256": "1fc88653c0962c156e2e7e7ea7be67147fa1a71cbc0074fd5c0dc2ba1cba2839"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v16.0.0.zip",
-          "url": "/releases/cloud-portal-wp-v16.0.0.zip",
-          "size": 23903,
-          "sha256": "72ec1a45d49d37e329b993aef4aed4067c9f3dd260e1016f15406fb898135a9c"
-        },
-        "fullProject": {
-          "fileName": "cloud-portal-full-v16.0.0.zip",
-          "url": "/releases/cloud-portal-full-v16.0.0.zip",
-          "size": 307905,
-          "sha256": "afac4ea63628aa9ce07f727b68ac06c330ea8b6c88d750269714c6c9bbc7ba72"
-        }
-      }
-    },
-    {
-      "version": "15.0.0",
-      "date": "2026-09-18T08:26:05Z",
-      "changelog": [
-        {
-          "version": "15.0.0",
-          "date": "2026-09-18T08:26:05.896106+00:00",
-          "changes": [
-            "همگام‌سازی کامل هسته پروکسی با لایه سازگاری برای نسخه standalone بدون وابستگی به وردپرس"
-          ]
-        },
-        {
-          "version": "10.0.0",
-          "date": "2026-09-18T07:55:28.370548+00:00",
-          "changes": [
-            "افزودن تابع makeProxiedUrl برای بازنویسی هدر Location و رفع خطای 500 در نسخه standalone"
-          ]
-        },
-        {
-          "version": "8.0.0",
-          "date": "2026-09-18T07:44:43.287551+00:00",
-          "changes": [
-            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
-          ]
-        }
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v15.0.0.zip",
-          "url": "/releases/cloud-portal-php-v15.0.0.zip",
-          "size": 24164,
-          "sha256": "1fc88653c0962c156e2e7e7ea7be67147fa1a71cbc0074fd5c0dc2ba1cba2839"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v15.0.0.zip",
-          "url": "/releases/cloud-portal-wp-v15.0.0.zip",
-          "size": 23904,
-          "sha256": "0453ae14a1ca56063874ddd7fafce032e3303bde894f7e67e33afdcbe28f5f88"
-        },
-        "fullProject": {
-          "fileName": "cloud-portal-full-v15.0.0.zip",
-          "url": "/releases/cloud-portal-full-v15.0.0.zip",
-          "size": 303564,
-          "sha256": "c6c363a4618862e0a7b9dbf735a33eb3e55fc2b7d8671d43adbc33826ea8848e"
+          "fileName": "cloud-portal-full-v18.0.0.zip",
+          "url": "/releases/cloud-portal-full-v18.0.0.zip",
+          "size": 313366,
+          "sha256": "7fe5f527b48dd7f4aed688d18080f2f49244d4124e1a062dc566d23193bbe5ee"
         }
       }
     }
   ],
-  "lastUpdated": "2026-09-18T08:45:58Z"
+  "lastUpdated": "2026-09-18T10:24:28Z"
 }
