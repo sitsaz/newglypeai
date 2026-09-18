@@ -493,8 +493,8 @@ class StealthPortalEngine {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_HEADER, true);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false); // Disable auto-follow to handle ALL redirects manually through proxy
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 0);
             curl_setopt($ch, CURLOPT_TIMEOUT, 15);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -524,6 +524,22 @@ class StealthPortalEngine {
                 if (stripos($line, 'Set-Cookie:') === 0) {
                     $cookieVal = trim(substr($line, 11));
                     $this->cookieJar->addCookieFromHeader($cookieVal, $targetUrl);
+                }
+            }
+
+            // Handle redirects manually to ensure they stay proxied
+            if (in_array($httpCode, [301, 302, 303, 307, 308])) {
+                // Extract Location header and rewrite it through proxy
+                foreach ($headerLines as $line) {
+                    if (stripos($line, 'Location:') === 0) {
+                        $locationUrl = trim(substr($line, 9));
+                        $proxiedLocation = $this->makeProxiedUrl($locationUrl, $targetUrl, ['encodeURL' => true]);
+                        // Replace original Location with proxied version
+                        $rawHeaders = str_replace($line, "Location: {$proxiedLocation}", $rawHeaders);
+                        // Also add Refresh header as backup
+                        $rawHeaders .= "\r\nRefresh: 0; url={$proxiedLocation}";
+                        break;
+                    }
                 }
             }
 
