@@ -206,19 +206,27 @@ class StealthPortalEngine {
     }
 
     /**
-     * Full HTML Rewriter with Glype Parity:
+     * Full HTML Rewriter with Glype Parity + Advanced Smart URL Detection:
      * - Disguised links, assets, forms, styles, scripts
      * - Frame-Buster defeat
      * - Strip title (preventing destination site from showing in tab/history)
      * - Responsive image srcset rewriting
      * - Client-side stealth hook injection
      * - Floating toolbar injection
+     * - Deep scanning for URLs in all attributes and data-* fields
      */
     public function rewriteHtml($html, $targetUrl, $options = []) {
         $removeScripts = !empty($options['removeScripts']);
         $removeImages  = !empty($options['removeImages']);
         $stripTitle    = !empty($options['stripTitle']);
         $showToolbar   = !empty($options['showToolbar']);
+
+        // 0. Pre-scan: Extract and rewrite any raw URLs in HTML comments or text nodes that look like tracking/metadata
+        $html = preg_replace_callback('/(https?:\/\/[^\s<>"\'`]+)/i', function($m) use ($targetUrl, $options) {
+            $url = $m[1];
+            if (strpos($url, $this->gatewayScript) !== false) return $url;
+            return $this->makeStreamUrl($url, $targetUrl, $options);
+        }, $html);
 
         // 1. Neutralize Frame-Busting Code (e.g. if(top!=self) top.location = self.location)
         $html = preg_replace('/(\btop\.location|\bparent\.location|\bwindow\.top\.location)/i', 'window.__safe_loc', $html);
@@ -328,7 +336,38 @@ class StealthPortalEngine {
             return '<' . $m[1] . $m[2] . $m[3] . '=' . $m[4] . $this->makeStreamUrl($m[5], $targetUrl, $options) . $m[4] . $m[6] . '>';
         }, $html);
 
-        // 16. Inject Stealth Client-Side Hook
+        // 16. Rewrite ALL data-* attributes that might contain URLs (smart scan)
+        $html = preg_replace_callback('/\b(data-(?:src|thumb|background|poster|url|image|original|bg|logo|banner|cover|wallpaper|avatar|photo|picture|file|path|link|href|api|endpoint|request|response|config|settings|metadata))=([\'"])(.*?)\2/i', function($m) use ($targetUrl, $options) {
+            $attrName = $m[1];
+            $quote = $m[2];
+            $attrValue = $m[3];
+            // Check if value looks like a URL
+            if (preg_match('/^https?:\/\//i', $attrValue) || preg_match('/^\/\//', $attrValue)) {
+                return $attrName . '=' . $quote . $this->makeStreamUrl($attrValue, $targetUrl, $options) . $quote;
+            }
+            // Also check for JSON objects containing URLs
+            if (strpos($attrValue, '{') !== false && strpos($attrValue, 'http') !== false) {
+                $decoded = json_decode($attrValue, true);
+                if ($decoded !== null) {
+                    $rewritten = $this->deepRewriteArray($decoded, $targetUrl, $options);
+                    return $attrName . '=' . $quote . json_encode($rewritten) . $quote;
+                }
+            }
+            return $m[0];
+        }, $html);
+
+        // 17. Rewrite event handler attributes (onclick, onerror, onload, etc.) containing URLs
+        $html = preg_replace_callback('/\bon\w+=([\'"])(.*?)\1/i', function($m) use ($targetUrl, $options) {
+            $quote = $m[1];
+            $handler = $m[2];
+            // Rewrite URLs in event handlers
+            $rewritten = preg_replace_callback('/([\'"])(https?:\/\/[^\'"]+)\1/i', function($urlMatch) use ($targetUrl, $options) {
+                return $urlMatch[1] . $this->makeStreamUrl($urlMatch[2], $targetUrl, $options) . $urlMatch[1];
+            }, $handler);
+            return 'on' . substr($m[0], 2, strpos($m[0], '=') - 2) . '=' . $quote . $rewritten . $quote;
+        }, $html);
+
+        // 18. Inject Stealth Client-Side Hook
         if (!$removeScripts) {
             $hookScript = file_get_contents(__DIR__ . '/stealthHook.js');
             $ctxConfig = [
@@ -353,7 +392,7 @@ class StealthPortalEngine {
             }
         }
 
-        // 17. Inject Floating Top Navigation Bar (Toolbar)
+        // 19. Inject Floating Top Navigation Bar (Toolbar)
         if ($showToolbar) {
             $toolbarHtml = $this->generateToolbarHtml($targetUrl, $options);
             if (stripos($html, '<body') !== false) {
@@ -364,6 +403,30 @@ class StealthPortalEngine {
         }
 
         return $html;
+    }
+
+    /**
+     * Deep recursive URL rewriter for arrays/objects (used for JSON in data attributes)
+     */
+    private function deepRewriteArray($data, $baseUrl, $options = []) {
+        if (!is_array($data)) {
+            if (is_string($data) && (preg_match('/^https?:\/\//i', $data) || preg_match('/^\/\//', $data))) {
+                return $this->makeStreamUrl($data, $baseUrl, $options);
+            }
+            return $data;
+        }
+        
+        $result = [];
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $result[$key] = $this->deepRewriteArray($value, $baseUrl, $options);
+            } elseif (is_string($value) && (preg_match('/^https?:\/\//i', $value) || preg_match('/^\/\//', $value))) {
+                $result[$key] = $this->makeStreamUrl($value, $baseUrl, $options);
+            } else {
+                $result[$key] = $value;
+            }
+        }
+        return $result;
     }
 
     /**

@@ -275,7 +275,7 @@
     });
   } catch(e) {}
 
-  // 7b. MutationObserver to automatically proxy newly injected DOM assets and thumbnails (xHamster, YouTube, etc.)
+  // 7b. MutationObserver to automatically proxy newly injected DOM assets and thumbnails (xHamster, YouTube, etc.) + Smart URL Detection
   try {
     var observer = new MutationObserver(function(mutations) {
       mutations.forEach(function(mutation) {
@@ -308,6 +308,41 @@
                 }
               }
             }
+            
+            // Smart scan: Check ALL data-* attributes for URLs
+            var attrs = node.attributes;
+            for (var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              var attrName = attr.name;
+              var attrValue = attr.value;
+              
+              // Check if it's a data-* attribute that might contain URLs
+              if (attrName.startsWith('data-') && attrValue && typeof attrValue === 'string') {
+                // If it looks like a URL
+                if (/^https?:\/\//i.test(attrValue) || /^\/\//.test(attrValue)) {
+                  node.setAttribute(attrName, resolveStreamUrl(attrValue));
+                }
+                // If it's JSON containing URLs
+                else if (attrValue.indexOf('{') !== -1 && attrValue.indexOf('http') !== -1) {
+                  try {
+                    var jsonObj = JSON.parse(attrValue);
+                    var rewrittenJson = deepRewriteJson(jsonObj);
+                    node.setAttribute(attrName, JSON.stringify(rewrittenJson));
+                  } catch(e) {}
+                }
+              }
+              
+              // Check event handlers (onclick, onload, onerror, etc.)
+              if (attrName.startsWith('on') && attrValue && typeof attrValue === 'string') {
+                var rewrittenHandler = attrValue.replace(/(['"])(https?:\/\/[^'"]+)\1/gi, function(match, quote, url) {
+                  return quote + resolveStreamUrl(url) + quote;
+                });
+                if (rewrittenHandler !== attrValue) {
+                  node.setAttribute(attrName, rewrittenHandler);
+                }
+              }
+            }
+            
             // Check data attributes and child forms/links
             var dataEls = node.querySelectorAll ? node.querySelectorAll('form, a, [data-src], [data-thumb], [data-background], [data-poster], [data-url], [data-image], [data-original], [data-bg]') : [];
             for (var i = 0; i < dataEls.length; i++) {

@@ -1,6 +1,75 @@
 {
-  "latest": "3.3.3",
+  "latest": "5.0.0",
   "releases": [
+    {
+      "version": "5.0.0",
+      "date": "2026-09-18T06:51:18Z",
+      "changelog": [
+        "ارتقاء اصلی به نسخه 5.0.0 با سیستم هوشمند بررسی و پروکسی URLها",
+        "اسکن هوشمند تمام URLهای داخل کدها، فایل‌ها، JS و HTML قبل از لود سایت",
+        "بازنویسی کامل ProxyEngine.php با قابلیت تشخیص عمیق URL در تمام اتریبیوت‌ها",
+        "افزودن تابع deepRewriteArray برای پردازش JSONهای تو در تو حاوی URL",
+        "پروکسی خودکار تمام data-* attributeهای حاوی URL یا JSON",
+        "بازنویسی event handlerهای onclick, onload, onerror و سایر رویدادها",
+        "تقویت stealthHook.js با اسکن هوشمند تمام اتریبیوت‌های DOM در MutationObserver",
+        "تشخیص و پروکسی URLهای داخل JSON در data-* attributeها",
+        "بازنویسی URLهای داخل event handlerها در زمان اجرا",
+        "همگام‌سازی کامل تغییرات در هر دو نسخه PHP Standalone و WordPress Plugin"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v5.0.0.zip",
+          "url": "/releases/cloud-portal-php-v5.0.0.zip",
+          "size": 24061,
+          "sha256": "1e6d67d36272ff246e51035a9b951074d85ccf706e2fd35e853c1ee2369756af"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v5.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v5.0.0.zip",
+          "size": 23452,
+          "sha256": "d72a08db00eb48b30209848e48d378481056d1a1e36bfe33ab46ea02eae918f9"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-v5.0.0.zip",
+          "url": "/releases/cloud-portal-full-v5.0.0.zip",
+          "size": 6514305,
+          "sha256": "59b7e3b2dc292a1e009580ce3e78a86199aba29750cb0d785e749197d82e57f4"
+        }
+      }
+    },
+    {
+      "version": "4.0.0",
+      "date": "2026-09-18T06:38:43Z",
+      "changelog": [
+        "ارتقاء اصلی به نسخه 4.0.0 با بهبودهای اساسی در پایداری و امنیت",
+        "رفع کامل مشکل ورود به جیمیل (Gmail): پشتیبانی از تایپ متن، دکمه Enter و دکمه Next/Submit",
+        "تقویت رهگیری فرم‌ها در stealthHook.js با بررسی tagName === 'FORM' و رویداد formdata",
+        "رهگیری دکمه Enter در کیبورد با listener برای رویداد keydown در فیلدهای INPUT و TEXTAREA",
+        "پشتیبانی از دکمه‌های INPUT/BUTTON/TEXTAREA در MutationObserver برای پروکسی شدن فرم والد",
+        "همگام‌سازی دوتایی تغییرات در هر دو نسخه PHP Standalone و WordPress Plugin",
+        "افزودن فایل zip جامع پروژه (cloud-portal-full-v4.0.0.zip) شامل تمام فایل‌های سورس"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v4.0.0.zip",
+          "url": "/releases/cloud-portal-php-v4.0.0.zip",
+          "size": 22880,
+          "sha256": "bbf766c4d096606a77bef44935081321186f4f57a8dac1318db7a819b085c449"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v4.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v4.0.0.zip",
+          "size": 22271,
+          "sha256": "2f5a2b39b99557801576ab613c031648ac8f18ad283cbd9891d190133bbeab15"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-v4.0.0.zip",
+          "url": "/releases/cloud-portal-full-v4.0.0.zip",
+          "size": 1300442,
+          "sha256": "74c53045982ef5fc618158ce34da3fda288082d4bedb18cff6384aa562c6bb87"
+        }
+      }
+    },
     {
       "version": "3.3.3",
       "date": "2026-09-18T06:25:58Z",
@@ -177,5 +246,5 @@
       }
     }
   ],
-  "lastUpdated": "2026-09-18T06:25:58Z"
+  "lastUpdated": "2026-09-18T06:51:18Z"
 }
