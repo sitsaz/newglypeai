@@ -87,6 +87,8 @@ try {
         $body = $engine->rewriteHtml($body, $targetUrl, $options);
     } elseif (stripos($contentType, 'text/css') !== false) {
         $body = $engine->rewriteCss($body, $targetUrl, $options);
+    } elseif (stripos($contentType, 'javascript') !== false || stripos($contentType, 'application/x-javascript') !== false) {
+        $body = $engine->rewriteJs($body, $targetUrl, $options);
     }
 
     echo $body;

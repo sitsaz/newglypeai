@@ -34,6 +34,8 @@ export default function App() {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
     stripSecurityHeaders: true,
     injectHook: true,
+    advancedProxy: true,
+    stealthMode: true,
   });
 
   const fetchStats = async () => {

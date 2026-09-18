@@ -68,6 +68,31 @@
 
   // 2. Intercept window.fetch (Crucial for modern dynamic buttons, Google Auth, AJAX)
   if (window.fetch) {
+    // Recursive JSON URL rewriter for API / InnerTube / Player config responses
+    function deepRewriteJson(obj) {
+      if (!obj || typeof obj !== 'object') {
+        if (typeof obj === 'string' && /^https?:\/\//i.test(obj)) {
+          return resolveStreamUrl(obj);
+        }
+        return obj;
+      }
+      if (Array.isArray(obj)) {
+        return obj.map(deepRewriteJson);
+      }
+      var res = {};
+      for (var k in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, k)) {
+          var val = obj[k];
+          if (typeof val === 'string' && /^https?:\/\//i.test(val)) {
+            res[k] = resolveStreamUrl(val);
+          } else {
+            res[k] = deepRewriteJson(val);
+          }
+        }
+      }
+      return res;
+    }
+
     var originalFetch = window.fetch;
     window.fetch = function(input, init) {
       if (typeof input === 'string') {
@@ -78,7 +103,25 @@
           input = new Request(newUrl, input);
         } catch (e) {}
       }
-      return originalFetch.call(this, input, init);
+      return originalFetch.call(this, input, init).then(function(response) {
+        try {
+          var ct = response.headers.get('content-type') || '';
+          if (ct.indexOf('json') !== -1) {
+            var clone = response.clone();
+            return clone.json().then(function(json) {
+              var rewrittenJson = deepRewriteJson(json);
+              return new Response(JSON.stringify(rewrittenJson), {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+              });
+            }).catch(function() {
+              return response;
+            });
+          }
+        } catch(e) {}
+        return response;
+      });
     };
   }
 
@@ -168,6 +211,74 @@
       return origReplace.call(this, state, title, url);
     };
   }
+
+  // 7a. Window.location / redirect interception
+  try {
+    var _origLocation = window.location;
+    var locProto = window.Location ? window.Location.prototype : null;
+    if (locProto) {
+      var origAssign = locProto.assign;
+      if (origAssign) {
+        locProto.assign = function(url) {
+          return origAssign.call(this, resolveStreamUrl(url));
+        };
+      }
+      var origReplaceLoc = locProto.replace;
+      if (origReplaceLoc) {
+        locProto.replace = function(url) {
+          return origReplaceLoc.call(this, resolveStreamUrl(url));
+        };
+      }
+    }
+
+    Object.defineProperty(window, 'location', {
+      get: function() { return _origLocation; },
+      set: function(val) {
+        if (typeof val === 'string') {
+          _origLocation.href = resolveStreamUrl(val);
+        } else {
+          _origLocation.href = val;
+        }
+      },
+      configurable: true
+    });
+  } catch(e) {}
+
+  // 7b. MutationObserver to automatically proxy newly injected DOM assets and thumbnails (xHamster, YouTube, etc.)
+  try {
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        mutation.addedNodes.forEach(function(node) {
+          if (node && node.nodeType === 1) {
+            var tag = node.tagName;
+            if (tag === 'IMG' || tag === 'VIDEO' || tag === 'AUDIO' || tag === 'SOURCE' || tag === 'IFRAME') {
+              var s = node.getAttribute('src');
+              if (s && !s.startsWith('#') && !s.startsWith('javascript:') && s.indexOf(gatewayScript) === -1) {
+                node.setAttribute('src', resolveStreamUrl(s));
+              }
+            } else if (tag === 'A') {
+              var h = node.getAttribute('href');
+              if (h && !h.startsWith('#') && !h.startsWith('javascript:') && h.indexOf(gatewayScript) === -1) {
+                node.setAttribute('href', resolveStreamUrl(h));
+              }
+            }
+            // Check data attributes
+            var dataEls = node.querySelectorAll ? node.querySelectorAll('[data-src], [data-thumb], [data-background], [data-poster], [data-url], [data-image], [data-original], [data-bg]') : [];
+            for (var i = 0; i < dataEls.length; i++) {
+              var el = dataEls[i];
+              ['data-src', 'data-thumb', 'data-background', 'data-poster', 'data-url', 'data-image', 'data-original', 'data-bg'].forEach(function(attr) {
+                var val = el.getAttribute(attr);
+                if (val && val.indexOf(gatewayScript) === -1) {
+                  el.setAttribute(attr, resolveStreamUrl(val));
+                }
+              });
+            }
+          }
+        });
+      });
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  } catch(e) {}
 
   // 8. Toolbar UI Toggle Handler
   window.__togglePortalToolbar = function() {

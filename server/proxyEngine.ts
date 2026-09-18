@@ -157,6 +157,44 @@ export function rewriteCss(cssContent: string, baseUrl: string, options: ProxyOp
 }
 
 /**
+ * Rewrites HLS .m3u8 playlist files so that all segment URLs and key URIs are routed through the proxy.
+ */
+export function rewriteM3u8(content: string, baseUrl: string, options: ProxyOptions = {}): string {
+  const lines = content.split('\n');
+  const rewrittenLines = lines.map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return line;
+    if (trimmed.startsWith('#')) {
+      return trimmed.replace(/URI="([^"]+)"/g, (match, uri) => {
+        const proxied = makeProxiedUrl(uri, baseUrl, options);
+        return `URI="${proxied}"`;
+      });
+    } else {
+      return makeProxiedUrl(trimmed, baseUrl, options);
+    }
+  });
+  return rewrittenLines.join('\n');
+}
+
+/**
+ * Rewrites JavaScript files so that hardcoded URLs, API paths, and asset requests are routed through the proxy.
+ */
+export function rewriteJs(jsContent: string, baseUrl: string, options: ProxyOptions = {}): string {
+  if (!options.advancedProxy) return jsContent;
+  return jsContent.replace(/(['"])(https?:\/\/[^'"]+|\/[^'"]+\.[a-zA-Z0-9]{2,5})\1/g, (match, quote, url) => {
+    if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('#') || url.startsWith('javascript:')) {
+      return match;
+    }
+    try {
+      const proxied = makeProxiedUrl(url, baseUrl, options);
+      return `${quote}${proxied}${quote}`;
+    } catch (e) {
+      return match;
+    }
+  });
+}
+
+/**
  * Rewrites an HTML document with Cheerio to route all assets, forms, links, and styles through the proxy,
  * and injects the Universal Client-Side Interceptor Hook.
  */
@@ -423,10 +461,12 @@ export async function executeProxyRequest(
     filteredHeaders['location'] = makeProxiedUrl(targetRedirect);
   }
 
-  // 6. Rewrite HTML or CSS if appropriate
+  // 6. Rewrite HTML, CSS, JS, or M3U8 if appropriate
   let finalData: any = response.data;
   const isHtml = contentType.includes('text/html');
   const isCss = contentType.includes('text/css');
+  const isJs = contentType.includes('javascript') || contentType.includes('ecmascript') || normalizedTarget.endsWith('.js');
+  const isM3u8 = contentType.includes('mpegurl') || contentType.includes('mpegURL') || normalizedTarget.includes('.m3u8');
 
   if (isHtml) {
     const rawHtml = Buffer.from(response.data).toString('utf-8');
@@ -435,6 +475,14 @@ export async function executeProxyRequest(
   } else if (isCss) {
     const rawCss = Buffer.from(response.data).toString('utf-8');
     const rewritten = rewriteCss(rawCss, normalizedTarget);
+    finalData = Buffer.from(rewritten, 'utf-8');
+  } else if (isJs && options.advancedProxy) {
+    const rawJs = Buffer.from(response.data).toString('utf-8');
+    const rewritten = rewriteJs(rawJs, normalizedTarget, options);
+    finalData = Buffer.from(rewritten, 'utf-8');
+  } else if (isM3u8) {
+    const rawM3u8 = Buffer.from(response.data).toString('utf-8');
+    const rewritten = rewriteM3u8(rawM3u8, normalizedTarget, options);
     finalData = Buffer.from(rewritten, 'utf-8');
   }
 

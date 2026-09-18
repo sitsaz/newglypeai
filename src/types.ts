@@ -44,4 +44,6 @@ export interface ProxyConfig {
   userAgent: string;
   stripSecurityHeaders: boolean;
   injectHook: boolean;
+  advancedProxy: boolean;
+  stealthMode: boolean;
 }

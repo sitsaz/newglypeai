@@ -3,7 +3,7 @@
  * Plugin Name: Cloud Portal & Web Viewer
  * Plugin URI: https://github.com/sitsaz/cloud-portal
  * Description: سامانه پیشرفته پرتال مرورگر و نمایشگر وب برای وردپرس با معماری کاملاً نامحسوس (Stealth)، کوکی‌جار RFC 6265، رمزگذاری آدرس‌ها و نوار ابزار Glype.
- * Version: 2.1.0
+ * Version: 3.3.1
  * Author: sitsaz
  * License: MIT
  * Text Domain: cloud-portal
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit; // Prevent direct access
 }
 
-define('CLOUD_PORTAL_VERSION', '2.1.0');
+define('CLOUD_PORTAL_VERSION', '3.3.1');
 define('CLOUD_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('CLOUD_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -177,6 +177,8 @@ class CloudPortalWordPressPlugin {
                 $body = $engine->rewriteHtml($body, $targetUrl, $options);
             } elseif (stripos($contentType, 'text/css') !== false) {
                 $body = $engine->rewriteCss($body, $targetUrl, $options);
+            } elseif (stripos($contentType, 'javascript') !== false || stripos($contentType, 'application/x-javascript') !== false) {
+                $body = $engine->rewriteJs($body, $targetUrl, $options);
             }
 
             echo $body;

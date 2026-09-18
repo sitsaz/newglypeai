@@ -18,6 +18,8 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
   const removeScripts = !!options.removeScripts;
   const removeImages = !!options.removeImages;
   const showToolbar = !!options.showToolbar;
+  const advancedProxy = !!options.advancedProxy;
+  const stealthMode = !!options.stealthMode;
 
   return `
 <script id="__newglype_proxy_hook__">
@@ -36,7 +38,59 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
   var IS_ENCODED = ${isEncoded ? 'true' : 'false'};
   var STRIP_TITLE = ${stripTitle ? 'true' : 'false'};
   var REMOVE_IMAGES = ${removeImages ? 'true' : 'false'};
+  var ADVANCED_PROXY = ${advancedProxy ? 'true' : 'false'};
+  var STEALTH_MODE = ${stealthMode ? 'true' : 'false'};
   var CIPHER_KEY = "cp_vault_key";
+
+  // Expose global resolver for advanced JS usage
+  window.__newglype_resolve__ = function(u) {
+    return resolveTargetUrl(u);
+  };
+
+  // Stealth & Anti-Fingerprint Shield
+  if (STEALTH_MODE) {
+    try {
+      // 1. WebRTC Leak Prevention
+      window.RTCPeerConnection = function() {
+        return {
+          createDataChannel: function() {},
+          createOffer: function() { return Promise.resolve({}); },
+          setLocalDescription: function() { return Promise.resolve({}); },
+          setRemoteDescription: function() { return Promise.resolve({}); },
+          addIceCandidate: function() { return Promise.resolve({}); },
+          onicecandidate: null,
+          ontrack: null,
+          close: function() {}
+        };
+      };
+      window.webkitRTCPeerConnection = window.RTCPeerConnection;
+
+      // 2. Canvas Fingerprint Noise
+      var origToDataURL = HTMLCanvasElement.prototype.toDataURL;
+      HTMLCanvasElement.prototype.toDataURL = function(type) {
+        try {
+          var ctx = this.getContext('2d');
+          if (ctx) {
+            var imgData = ctx.getImageData(0, 0, Math.max(1, this.width), Math.max(1, this.height));
+            imgData.data[0] = imgData.data[0] ^ 1;
+            ctx.putImageData(imgData, 0, 0);
+          }
+        } catch(e) {}
+        return origToDataURL.apply(this, arguments);
+      };
+
+      // 3. Navigator Spoofing
+      Object.defineProperty(navigator, 'webdriver', { get: function() { return false; } });
+      Object.defineProperty(navigator, 'hardwareConcurrency', { get: function() { return 8; } });
+      Object.defineProperty(navigator, 'deviceMemory', { get: function() { return 8; } });
+      Object.defineProperty(navigator, 'languages', { get: function() { return ['en-US', 'en']; } });
+
+      // 4. Ping & Telemetry Shield
+      if (Navigator.prototype.sendBeacon) {
+        Navigator.prototype.sendBeacon = function() { return true; };
+      }
+    } catch(err) {}
+  }
 
   // XOR Cipher matching backend StealthCipher
   function cipherEncode(str) {
@@ -107,7 +161,32 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
     }
   }
 
-  // 1. Intercept window.fetch (Handles YouTube InnerTube browse, next, search, API requests)
+  // Recursive JSON URL rewriter for API / InnerTube / Player config responses
+  function deepRewriteJson(obj) {
+    if (!obj || typeof obj !== 'object') {
+      if (typeof obj === 'string' && /^https?:\/\//i.test(obj)) {
+        return resolveTargetUrl(obj);
+      }
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(deepRewriteJson);
+    }
+    var res = {};
+    for (var k in obj) {
+      if (obj.hasOwnProperty(k)) {
+        var val = obj[k];
+        if (typeof val === 'string' && /^https?:\/\//i.test(val)) {
+          res[k] = resolveTargetUrl(val);
+        } else {
+          res[k] = deepRewriteJson(val);
+        }
+      }
+    }
+    return res;
+  }
+
+  // 1. Intercept window.fetch (Handles YouTube InnerTube browse, next, search, API requests & JSON response rewriting)
   var _originalFetch = window.fetch;
   if (_originalFetch) {
     window.fetch = function(input, init) {
@@ -125,7 +204,25 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
       } catch(err) {
         console.warn('[NewGlype Proxy Hook] fetch rewrite error:', err);
       }
-      return _originalFetch.call(this, input, init);
+      return _originalFetch.call(this, input, init).then(function(response) {
+        try {
+          var ct = response.headers.get('content-type') || '';
+          if (ct.indexOf('json') !== -1) {
+            var clone = response.clone();
+            return clone.json().then(function(json) {
+              var rewrittenJson = deepRewriteJson(json);
+              return new Response(JSON.stringify(rewrittenJson), {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+              });
+            }).catch(function() {
+              return response;
+            });
+          }
+        } catch(e) {}
+        return response;
+      });
     };
   }
 
@@ -161,23 +258,36 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
     }
   } catch(e) {}
 
-  // 4. Intercept Element.setAttribute (catches src, srcset, href for dynamically built elements)
+  // 4. Intercept Element.setAttribute (catches src, srcset, href, poster, and various data- attributes for dynamic elements)
   try {
     var _originalSetAttribute = Element.prototype.setAttribute;
     Element.prototype.setAttribute = function(name, val) {
       var attr = (name || '').toLowerCase();
       if (typeof val === 'string') {
-        if (attr === 'src' || attr === 'data-src' || attr === 'data-thumb') {
+        if (
+          attr === 'src' ||
+          attr === 'data-src' ||
+          attr === 'data-thumb' ||
+          attr === 'data-background' ||
+          attr === 'data-poster' ||
+          attr === 'data-url' ||
+          attr === 'data-image' ||
+          attr === 'data-preview' ||
+          attr === 'data-original' ||
+          attr === 'data-bg' ||
+          attr === 'data-lazy-src' ||
+          attr === 'poster'
+        ) {
           if (REMOVE_IMAGES && (this.tagName === 'IMG' || this.tagName === 'IMAGE')) {
             val = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
           } else {
             val = resolveTargetUrl(val);
           }
-        } else if (attr === 'srcset') {
+        } else if (attr === 'srcset' || attr === 'data-srcset') {
           if (!REMOVE_IMAGES) {
             try {
               val = val.split(',').map(function(part) {
-                var chunks = part.trim().split(/\\s+/);
+                var chunks = part.trim().split(/\s+/);
                 if (!chunks[0]) return part;
                 return resolveTargetUrl(chunks[0]) + (chunks[1] ? ' ' + chunks[1] : '');
               }).join(', ');
@@ -187,9 +297,26 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
           if (!val.startsWith('#') && !val.startsWith('javascript:')) {
             val = resolveTargetUrl(val);
           }
+        } else if (attr === 'style' && val.indexOf('url(') !== -1) {
+          var urlRegex = new RegExp("url\\\\(\\\\s*(['\\\"]?)(.*?)\\\\1\\\\s*\\\\)", "gi");
+          val = val.replace(urlRegex, function(match, quote, u) {
+            return 'url("' + resolveTargetUrl(u) + '")';
+          });
         }
       }
       return _originalSetAttribute.call(this, name, val);
+    };
+
+    // Also intercept CSSStyleDeclaration.setProperty for background-image
+    var _originalSetProperty = CSSStyleDeclaration.prototype.setProperty;
+    CSSStyleDeclaration.prototype.setProperty = function(property, value, priority) {
+      if (typeof value === 'string' && (property === 'background-image' || property === 'background') && value.indexOf('url(') !== -1) {
+        var urlRegex = new RegExp("url\\\\(\\\\s*(['\\\"]?)(.*?)\\\\1\\\\s*\\\\)", "gi");
+        value = value.replace(urlRegex, function(match, quote, u) {
+          return 'url("' + resolveTargetUrl(u) + '")';
+        });
+      }
+      return _originalSetProperty.call(this, property, value, priority);
     };
   } catch(e) {}
 
@@ -297,7 +424,7 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
     });
   } catch(cookieErr) {}
 
-  // 10. Window.open override
+  // 10. Window.open override and window.location / redirect interception
   var _originalOpen = window.open;
   window.open = function(url, target, features) {
     if (url) {
@@ -305,6 +432,73 @@ export function generateClientHook(targetUrl: string, options: ProxyOptions = {}
     }
     return _originalOpen.call(this, url, target, features);
   };
+
+  try {
+    var _origLocation = window.location;
+    var locProto = window.Location ? window.Location.prototype : null;
+    if (locProto) {
+      var origAssign = locProto.assign;
+      if (origAssign) {
+        locProto.assign = function(url) {
+          return origAssign.call(this, resolveTargetUrl(url));
+        };
+      }
+      var origReplace = locProto.replace;
+      if (origReplace) {
+        locProto.replace = function(url) {
+          return origReplace.call(this, resolveTargetUrl(url));
+        };
+      }
+    }
+
+    Object.defineProperty(window, 'location', {
+      get: function() { return _origLocation; },
+      set: function(val) {
+        if (typeof val === 'string') {
+          _origLocation.href = resolveTargetUrl(val);
+        } else {
+          _origLocation.href = val;
+        }
+      },
+      configurable: true
+    });
+  } catch(e) {}
+
+  // 11. MutationObserver to automatically proxy newly injected DOM assets and thumbnails (xHamster, YouTube, etc.)
+  try {
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        mutation.addedNodes.forEach(function(node) {
+          if (node && node.nodeType === 1) {
+            var tag = node.tagName;
+            if (tag === 'IMG' || tag === 'VIDEO' || tag === 'AUDIO' || tag === 'SOURCE' || tag === 'IFRAME') {
+              var s = node.getAttribute('src');
+              if (s && !s.startsWith('#') && !s.startsWith('javascript:') && !s.startsWith(PROXY_GATEWAY)) {
+                node.setAttribute('src', resolveTargetUrl(s));
+              }
+            } else if (tag === 'A') {
+              var h = node.getAttribute('href');
+              if (h && !h.startsWith('#') && !h.startsWith('javascript:') && !h.startsWith(PROXY_GATEWAY)) {
+                node.setAttribute('href', resolveTargetUrl(h));
+              }
+            }
+            // Check data attributes and background images in children or node
+            var dataEls = node.querySelectorAll ? node.querySelectorAll('[data-src], [data-thumb], [data-background], [data-poster], [data-url], [data-image], [data-original], [data-bg]') : [];
+            for (var i = 0; i < dataEls.length; i++) {
+              var el = dataEls[i];
+              ['data-src', 'data-thumb', 'data-background', 'data-poster', 'data-url', 'data-image', 'data-original', 'data-bg'].forEach(function(attr) {
+                var val = el.getAttribute(attr);
+                if (val && !val.startsWith(PROXY_GATEWAY)) {
+                  el.setAttribute(attr, resolveTargetUrl(val));
+                }
+              });
+            }
+          }
+        });
+      });
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  } catch(e) {}
 
   // 11. Notify parent shell of location changes (SPAs, pushState)
   function notifyParentNavigation(newUrl) {

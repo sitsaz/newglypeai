@@ -54,6 +54,40 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ config, onChange }
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-indigo-200 bg-indigo-50/40 hover:bg-indigo-50/70 cursor-pointer transition-colors md:col-span-2">
+            <input
+              type="checkbox"
+              checked={config.advancedProxy}
+              onChange={(e) => onChange({ ...config, advancedProxy: e.target.checked })}
+              className="mt-1 rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+            />
+            <div>
+              <span className="font-bold text-indigo-900 text-sm block">
+                پروکسی پیشرفته و بازنویسی فعال جاوا اسکریپت (Advanced Ultra-Proxy & JS URL Rewriter)
+              </span>
+              <p className="text-xs text-indigo-700 mt-0.5">
+                فایل‌های جاوا اسکریپت و اسکریپت‌های پویا را در سطح سرور و کلاینت بازنویسی کرده و تمام URLها، APIها و درخواست‌های دینامیک را از پروکسی عبور می‌دهد تا سایت‌هایی که منطق سنگین JS دارند بدون نقص لود شوند.
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/70 cursor-pointer transition-colors md:col-span-2">
+            <input
+              type="checkbox"
+              checked={config.stealthMode}
+              onChange={(e) => onChange({ ...config, stealthMode: e.target.checked })}
+              className="mt-1 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+            />
+            <div>
+              <span className="font-bold text-emerald-900 text-sm block">
+                حالت مخفی‌سازی هویت و ضد شناسایی (Stealth & Anti-Fingerprint Shield)
+              </span>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                مسدودسازی تست‌های پینگ، WebRTC IP leaks، فینگرپیرینت Canvas/Audio/WebGL و جعل هویت مرورگر و navigator جهت مخفی‌سازی کامل هویت کاربر در برابر سیستم‌های ردیابی و امنیتی.
+              </p>
+            </div>
+          </label>
+
           <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
             <input
               type="checkbox"

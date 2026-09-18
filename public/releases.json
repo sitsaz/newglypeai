@@ -1,9 +1,105 @@
 {
-  "latest": "2.1.0",
+  "latest": "3.3.1",
   "releases": [
     {
+      "version": "3.3.1",
+      "date": "2026-09-18T05:47:15Z",
+      "changelog": [
+        "رفع باگ ارسال آدرس نامعتبر در نوار ناوبری (Toolbar) و پیاده‌سازی Encode استاندارد در فرم جستجوی بالای صفحه",
+        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس",
+        "اضافه شدن قابلیت بازنویسی کامل فایل‌های JS درون سرور برای هاست‌های مستقل PHP",
+        "رفع کامل مشکل فرم‌های ورود (مانند Google Login و Gmail) در پروکسی PHP و افزونه وردپرس"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v3.3.1.zip",
+          "url": "/releases/cloud-portal-php-v3.3.1.zip",
+          "size": 21858,
+          "sha256": "b500ae3b82545f3bc18d7dcf23fadf74ad25a7dbffe265e4381560691b0017b6"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v3.3.1.zip",
+          "url": "/releases/cloud-portal-wp-v3.3.1.zip",
+          "size": 21274,
+          "sha256": "027bae3382fbd7b3827541b12b0883281b39470ac6c1af61775310e9fb5540f4"
+        }
+      }
+    },
+    {
+      "version": "3.3.0",
+      "date": "2026-09-18T05:35:41Z",
+      "changelog": [
+        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس",
+        "اضافه شدن قابلیت بازنویسی کامل فایل‌های JS درون سرور برای هاست‌های مستقل PHP",
+        "رفع کامل مشکل فرم‌های ورود (مانند Google Login و Gmail) در پروکسی PHP و افزونه وردپرس",
+        "انتشار نسخه ۳.۳.۰ پایدار برای هاست‌های مستقل PHP و افزونه وردپرس"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v3.3.0.zip",
+          "url": "/releases/cloud-portal-php-v3.3.0.zip",
+          "size": 21684,
+          "sha256": "90bdf7cf27dd42c0a686bfb4c2dcd8bb068b59e40b2ecb647e02f3af05563ded"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v3.3.0.zip",
+          "url": "/releases/cloud-portal-wp-v3.3.0.zip",
+          "size": 21099,
+          "sha256": "172fce296bb1f98ca283be2487c016a0ffc0a92c9ccc1cb516cb4fb91e9c7920"
+        }
+      }
+    },
+    {
+      "version": "3.2.0",
+      "date": "2026-09-18T05:24:22Z",
+      "changelog": [
+        "رفع کامل مشکل فرم‌های چندمرحله‌ای ورود (مانند Google Login و Gmail) و کلیک روی دکمه Next در درخواست‌های AJAX/Fetch و POST",
+        "بهبود کامل نوار آدرس بالا (Omnibar) برای ناوبری و هدایت آنی و بدون تأخیر به آدرس‌های دلخواه",
+        "تکمیل بازنویسی پویا و هوشمند تصاویر بندانگشتی و پیش‌نمایش در xHamster و یوتیوب",
+        "انتشار نسخه ۳.۲.۰ پایدار برای هاست‌های مستقل PHP و افزونه وردپرس"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v3.2.0.zip",
+          "url": "/releases/cloud-portal-php-v3.2.0.zip",
+          "size": 20481,
+          "sha256": "2ac4ca72ab9a08cd768e6d9553730c829586dd7c9458375afbc294981e3e88dc"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v3.2.0.zip",
+          "url": "/releases/cloud-portal-wp-v3.2.0.zip",
+          "size": 19936,
+          "sha256": "e6f84ee3f6dfb874a63d3a93522eaf6649e2c4fca69e0e06ae5d3a795e074b1d"
+        }
+      }
+    },
+    {
+      "version": "3.0.0",
+      "date": "2026-09-18T05:17:01Z",
+      "changelog": [
+        "معرفی پروکسی پیشرفته و بازنویسی فعال جاوا اسکریپت (Advanced JS URL Rewriter) جهت عبور تمام URLها و APIهای پویا",
+        "پیاده‌سازی حالت مخفی‌سازی هویت و ضد شناسایی (Stealth & Anti-Fingerprint Shield) شامل مسدودسازی WebRTC، نویز Canvas/Audio و جعل هویت مرورگر",
+        "پشتیبانی کامل از بازنویسی پلی‌لیست‌های HLS (.m3u8) و استریم ویدیوها و تامبنیل‌ها در یوتیوب و xHamster",
+        "توسعه نسخه ۳.۰.۰ پایدار برای نصب روی هاست‌های مستقل PHP و افزونه وردپرس"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v3.0.0.zip",
+          "url": "/releases/cloud-portal-php-v3.0.0.zip",
+          "size": 20481,
+          "sha256": "2ac4ca72ab9a08cd768e6d9553730c829586dd7c9458375afbc294981e3e88dc"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v3.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v3.0.0.zip",
+          "size": 19936,
+          "sha256": "5c673eccaa092d4dee8b1463b05cb8f9d79fca2691811885a996bb28ef72136c"
+        }
+      }
+    },
+    {
       "version": "2.1.0",
-      "date": "2026-09-18T04:00:25Z",
+      "date": "2026-09-18T05:00:32Z",
       "changelog": [
         "رفع کامل تداخل خطای XML رهگیری و ترک‌بک وردپرس (تبدیل پارامترها به پیشوند اختصاصی cp_)",
         "پشتیبانی کامل از بارگذاری پویا و درخواست‌های InnerTube یوتیوب (YouTube) و استریم تامبنیل‌ها",
@@ -21,10 +117,10 @@
           "fileName": "cloud-portal-wp-v2.1.0.zip",
           "url": "/releases/cloud-portal-wp-v2.1.0.zip",
           "size": 19936,
-          "sha256": "921f7468bfc30350f13f2ee00da25991dbf2886948d6c22ec5752b748b9b9b1f"
+          "sha256": "7daf0ae245361e87230c42caf99999a22b6de6cc9e454e0f782493477a264062"
         }
       }
     }
   ],
-  "lastUpdated": "2026-09-18T04:00:25Z"
+  "lastUpdated": "2026-09-18T05:47:15Z"
 }

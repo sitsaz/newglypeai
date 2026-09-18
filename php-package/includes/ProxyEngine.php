@@ -140,6 +140,19 @@ class StealthPortalEngine {
     }
 
     /**
+     * Rewrites JS content (replaces hardcoded URLs)
+     */
+    public function rewriteJs($js, $baseUrl, $options = []) {
+        if (empty($js)) return $js;
+        return preg_replace_callback('/([\'"])(https?:\/\/[^\'"]+)\1/i', function($matches) use ($baseUrl, $options) {
+            $quote = $matches[1];
+            $url = $matches[2];
+            $stream = $this->makeStreamUrl($url, $baseUrl, $options);
+            return $quote . $stream . $quote;
+        }, $js);
+    }
+
+    /**
      * Generates the Glype-style Floating Top Navigation Toolbar.
      */
     private function generateToolbarHtml($targetUrl, $options = []) {
@@ -157,7 +170,7 @@ class StealthPortalEngine {
                 <a href="' . esc_attr($homeUrl) . '" style="color:#38bdf8; text-decoration:none; font-weight:bold; display:flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px; background:#1e293b; white-space:nowrap;">
                     🏠 صفحه اصلی
                 </a>
-                <form action="' . esc_attr($this->gatewayScript) . '" method="GET" style="display:flex; gap:6px; flex:1; margin:0;" onsubmit="if(!this.b.value.match(/^https?:/i)) this.b.value=\'https://\'+this.b.value;">
+                <form action="' . esc_attr($this->gatewayScript) . '" method="GET" style="display:flex; gap:6px; flex:1; margin:0;" onsubmit="event.preventDefault(); var v = this.b.value; if(!v.match(/^https?:/i)) v=\'https://\'+v; var enc = this.enc && this.enc.value==\'1\'; var q = \'?b=\' + (enc ? window.btoa(v).replace(/\+/g, \'-\').replace(/\//g, \'_\').replace(/=/g, \'\') : encodeURIComponent(v)) + \'&tb=\' + (this.tb.value) + (enc ? \'&enc=1\' : \'\'); ' . ($rsChecked ? 'q+=\'&rs=1\';' : '') . ' ' . ($riChecked ? 'q+=\'&ri=1\';' : '') . ' ' . ($stChecked ? 'q+=\'&st=1\';' : '') . ' window.location.href = \'' . esc_attr($this->gatewayScript) . '\' + q;">
                     <input type="text" name="b" value="' . $rawTarget . '" style="flex:1; background:#1e293b; border:1px solid #475569; color:#f8fafc; padding:4px 10px; border-radius:6px; font-size:12px; font-family:monospace; outline:none;" placeholder="https://...">
                     <input type="hidden" name="tb" value="1">
                     ' . ($encChecked ? '<input type="hidden" name="enc" value="1">' : '') . '
