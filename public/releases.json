@@ -86,8 +86,51 @@
   ],
   "releases": [
     {
+      "version": "7.0.0",
+      "date": "2026-09-18T07:26:43Z",
+      "changelog": [
+        {
+          "version": "7.0.0",
+          "date": "2026-09-18T07:26:43.913464+00:00",
+          "changes": [
+            "Fix: Prevent redirect leaks by disabling auto-follow and rewriting Location headers manually"
+          ]
+        },
+        "ارتقاء اصلی به نسخه 6.0.0 با سیستم فوق‌هوشمند پروکسی URL",
+        "افزودن اسکن دوگانه Pre-scan برای شناسایی تمام URLهای خام در HTML",
+        "تشخیص و پروکسی خودکار URLهای داخل رشته‌های JSON تعبیه شده در HTML",
+        "بهبود deepRewriteArray برای پردازش عمیق‌تر JSONهای تو در تو",
+        "پروکسی هوشمند تمام data-* attributeها با تشخیص خودکار URL و JSON",
+        "بازنویسی کامل event handlerهای JavaScript (onclick, onload, onerror, ...)",
+        "تقویت MutationObserver برای اسکن لحظه‌ای تمام اتریبیوت‌های DOM جدید",
+        "پشتیبانی از پروکسی URLهای داخل JSON در data-* attributeها در زمان اجرا",
+        "همگام‌سازی کامل بین نسخه PHP Standalone و WordPress Plugin",
+        "رفع مشکل لینک‌ها و محتواهای پروکسی نشده در سایت‌های مدرن"
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v7.0.0.zip",
+          "url": "/releases/cloud-portal-php-v7.0.0.zip",
+          "size": 24441,
+          "sha256": "6139c4211cac40009fa1323ec8107d64b86229bce998732a522b95231a69ffb8"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v7.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v7.0.0.zip",
+          "size": 23560,
+          "sha256": "8ccec4f7eb27ca4e2bbe6a72218da6e34d93ef7233ddc76c19f3920abad4e563"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-v7.0.0.zip",
+          "url": "/releases/cloud-portal-full-v7.0.0.zip",
+          "size": 303093,
+          "sha256": "464ff440f69a059ad2398c4690178176fde63792f0ea6f03c62c22116182d465"
+        }
+      }
+    },
+    {
       "version": "6.0.0",
-      "date": "2026-09-18T07:17:30Z",
+      "date": "2026-09-18T07:26:16Z",
       "changelog": [
         "ارتقاء اصلی به نسخه 6.0.0 با سیستم فوق‌هوشمند پروکسی URL",
         "افزودن اسکن دوگانه Pre-scan برای شناسایی تمام URLهای خام در HTML",
@@ -111,17 +154,17 @@
           "fileName": "cloud-portal-wp-v6.0.0.zip",
           "url": "/releases/cloud-portal-wp-v6.0.0.zip",
           "size": 23560,
-          "sha256": "935230f1c321282cb0536d45335fec08e99afce7a387d1987eb86672a311cc8c"
+          "sha256": "751517a0ed249f1b602166bc3254970f575359324b29df11ce8cf6ed66fdc7a4"
         },
         "fullProject": {
           "fileName": "cloud-portal-full-v6.0.0.zip",
           "url": "/releases/cloud-portal-full-v6.0.0.zip",
           "size": 302725,
-          "sha256": "330e9f06445fae2d1d8966800c1369aaab5f5b1d066d958b02cc3b5f4821b650"
+          "sha256": "2a8ec1397a876c3625b2080f726718cf81bcd05e8c943ed3f4090d73661e1487"
         }
       }
     }
   ],
-  "latest": "6.0.0",
-  "lastUpdated": "2026-09-18T07:17:30Z"
+  "latest": "7.0.0",
+  "lastUpdated": "2026-09-18T07:26:43Z"
 }

@@ -14,7 +14,8 @@ import json
 import zipfile
 import shutil
 import hashlib
-from datetime import datetime
+import sys
+from datetime import datetime, timezone
 
 # Base directories
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -31,7 +32,7 @@ if os.path.exists(DIST_DIR):
 
 # 1. Read or initialize version
 version_file = os.path.join(ROOT_DIR, "version.json")
-version_data = {"version": "2.1.0", "buildNumber": 1, "lastUpdated": datetime.utcnow().isoformat()}
+version_data = {"version": "2.1.0", "buildNumber": 1, "lastUpdated": datetime.now(timezone.utc).isoformat()}
 
 if os.path.exists(version_file):
     try:
@@ -40,8 +41,26 @@ if os.path.exists(version_file):
     except Exception as e:
         print(f"Warning reading version.json: {e}")
 
+# Check if version is provided as command line argument
+if len(sys.argv) > 1:
+    new_version = sys.argv[1]
+    version_data["version"] = new_version
+    # Increment build number
+    version_data["buildNumber"] = version_data.get("buildNumber", 0) + 1
+    
+# Add changelog if provided
+if len(sys.argv) > 2:
+    changelog = sys.argv[2]
+    if "changelog" not in version_data:
+        version_data["changelog"] = []
+    version_data["changelog"].insert(0, {"version": new_version, "date": datetime.now(timezone.utc).isoformat(), "changes": [changelog]})
+
+# Save updated version data
+with open(version_file, "w", encoding="utf-8") as f:
+    json.dump(version_data, f, indent=2)
+
 version_str = version_data.get("version", "2.1.0")
-now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 version_data["lastUpdated"] = now_iso
 
 print(f"==================================================")
