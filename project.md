@@ -49,4 +49,21 @@ When changes are made, run the following to generate the distributable zip files
 ```bash
 python3 scripts/build-zip.py
 ```
-This updates `/releases/manifest.json` and creates new `.zip` files for both the Standalone PHP host and the WordPress plugin.
+This updates `/releases/manifest.json` and creates new `.zip` files for:
+- Standalone PHP host (`cloud-portal-php-v{VERSION}.zip`)
+- WordPress plugin (`cloud-portal-wp-v{VERSION}.zip`)
+- Full project archive (`cloud-portal-full-v{VERSION}.zip`)
+
+All files are automatically copied to `/public/releases/` for download via Caddy server.
+
+### 📡 Download Server (Caddy)
+After building, start the Caddy server to serve downloads:
+```bash
+caddy run --config Caddyfile
+```
+Then access:
+- `http://localhost:8080/releases/` - Browse all releases
+- `http://localhost:8080/releases/manifest.json` - Release manifest API
+- `http://localhost:8080/cloud-portal-php.zip` - Latest PHP standalone (permalink)
+- `http://localhost:8080/cloud-portal-wp.zip` - Latest WordPress plugin (permalink)
+- `http://localhost:8080/cloud-portal-full.zip` - Latest full project archive (permalink)

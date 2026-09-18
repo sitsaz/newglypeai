@@ -1,12 +1,20 @@
 {
-  "version": "3.3.3",
-  "buildNumber": 1,
-  "lastUpdated": "2026-09-18T06:10:00Z",
-  "changelog": [
-    "رفع مشکل نشت آی‌پی اصلی کاربر (IP Leak) با فیلتر کردن دقیق هدرهای X-Forwarded-For و سایر هدرهای شناسایی کلاینت",
-    "حل مشکل کامل لاگین به جیمیل (Gmail) و گوگل: رفع افتادگی هدرهای XHR، پشتیبانی از متد Fetch با Object Request و اصلاح MutationObserver برای Form Action",
-    "انتقال صحیح هدرهای مهم سمت کلاینت (مانند Accept و X-Requested-With) به سرور مقصد جهت جلوگیری از خطاهای امنیتی",
-    "رفع باگ ارسال آدرس نامعتبر در نوار ناوبری (Toolbar) و پیاده‌سازی Encode استاندارد در فرم جستجوی بالای صفحه",
-    "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس"
-  ]
+  "version": "22.0.0",
+  "release_date": "2026-09-18",
+  "changelog": {
+    "fa": [
+      "اصلاح سیستم آپلود فایل JSON در نسخه Standalone و پلاگین وردپرس",
+      "پشتیبانی از فرمت‌های مختلف داده (POST, php://input, form-encoded)",
+      "رفع خطای 'داده‌های نامعتبر' هنگام آپلود خروجی افزونه کروم",
+      "بهبود پردازش ساختار JSON خروجی افزونه کروم",
+      "هماهنگ‌سازی کامل بین افزونه کروم، نسخه Standalone و پلاگین وردپرس"
+    ],
+    "en": [
+      "Fixed JSON file upload system in Standalone and WordPress plugin versions",
+      "Support for multiple data formats (POST, php://input, form-encoded)",
+      "Resolved 'Invalid data' error when uploading Chrome extension output",
+      "Improved processing of Chrome extension output JSON structure",
+      "Full synchronization between Chrome extension, Standalone and WordPress plugin"
+    ]
+  }
 }

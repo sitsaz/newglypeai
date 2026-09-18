@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Portal Session Exporter</title>
+    <style>
+        body {
+            width: 380px;
+            padding: 15px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        .export-section {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #fff;
+            color: #667eea;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        .btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            display: none;
+        }
+        .info {
+            font-size: 11px;
+            opacity: 0.9;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+        .file-info {
+            background: rgba(0,255,0,0.2);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 11px;
+            display: none;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h2>📤 Cloud Portal Session Exporter</h2>
+    
+    <!-- Export Section -->
+    <div id="exportSection" class="export-section">
+        <p style="font-size: 13px; text-align: center;">Export cookies from current tab to a file</p>
+        <button class="btn" id="exportBtn">💾 Export Cookies to File</button>
+        <div class="status" id="exportStatus"></div>
+        <div class="file-info" id="fileInfo"></div>
+    </div>
+    
+    <div class="info">
+        <strong>How to use:</strong><br>
+        1. Navigate to the website you want to export sessions from<br>
+        2. Click this extension icon<br>
+        3. Click "Export Cookies to File"<br>
+        4. A JSON file will be downloaded to your computer<br>
+        5. Login to your Cloud Portal account and manually upload the file to import sessions
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

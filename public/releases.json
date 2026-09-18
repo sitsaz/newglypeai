@@ -1,175 +1,46 @@
 {
-  "latest": "3.3.3",
-  "releases": [
+  "latest_version": "22.0.0",
+  "release_date": "2026-09-18",
+  "packages": [
     {
-      "version": "3.3.3",
-      "date": "2026-09-18T06:07:32Z",
-      "changelog": [
-        "رفع مشکل نشت آی‌پی اصلی کاربر (IP Leak) با فیلتر کردن دقیق هدرهای X-Forwarded-For و سایر هدرهای شناسایی کلاینت",
-        "حل مشکل کامل لاگین به جیمیل (Gmail) و گوگل: رفع افتادگی هدرهای XHR، پشتیبانی از متد Fetch با Object Request و اصلاح MutationObserver برای Form Action",
-        "انتقال صحیح هدرهای مهم سمت کلاینت (مانند Accept و X-Requested-With) به سرور مقصد جهت جلوگیری از خطاهای امنیتی",
-        "رفع باگ ارسال آدرس نامعتبر در نوار ناوبری (Toolbar) و پیاده‌سازی Encode استاندارد در فرم جستجوی بالای صفحه",
-        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس"
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v3.3.3.zip",
-          "url": "/releases/cloud-portal-php-v3.3.3.zip",
-          "size": 22572,
-          "sha256": "0263b3ab1ba51fefb601f8dc151a9387ff5cc159423e32cff15bba931a17ff47"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v3.3.3.zip",
-          "url": "/releases/cloud-portal-wp-v3.3.3.zip",
-          "size": 21961,
-          "sha256": "e5702829857af770837eff6522846e85c48d63d7539ab9bc3ed9618568fe1053"
-        }
-      }
+      "name": "Chrome Extension",
+      "version": "22.0.0",
+      "file": "cloud-portal-chrome-ext-v22.0.0.zip",
+      "description": "افزونه کروم برای استخراج کوکی‌ها و سشن‌ها"
     },
     {
-      "version": "3.3.2",
-      "date": "2026-09-18T05:59:53Z",
-      "changelog": [
-        "حل مشکل کامل لاگین به جیمیل (Gmail) و گوگل: رفع افتادگی هدرهای XHR، پشتیبانی از متد Fetch با Object Request و اصلاح MutationObserver برای Form Action",
-        "انتقال صحیح هدرهای مهم سمت کلاینت (مانند Accept و X-Requested-With) به سرور مقصد جهت جلوگیری از خطاهای امنیتی",
-        "رفع باگ ارسال آدرس نامعتبر در نوار ناوبری (Toolbar) و پیاده‌سازی Encode استاندارد در فرم جستجوی بالای صفحه",
-        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس"
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v3.3.2.zip",
-          "url": "/releases/cloud-portal-php-v3.3.2.zip",
-          "size": 22508,
-          "sha256": "eaf85f66424dab30ab62e3ff713ba18cd519768a8518692db59cf5df69d7317e"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v3.3.2.zip",
-          "url": "/releases/cloud-portal-wp-v3.3.2.zip",
-          "size": 21900,
-          "sha256": "1d12decfae9b22e74cc9282ea1b64d9aa94773cdb094ebaf1e232e96dff48bff"
-        }
-      }
+      "name": "PHP Standalone",
+      "version": "22.0.0",
+      "file": "cloud-portal-php-v22.0.0.zip",
+      "description": "نسخه مستقل PHP برای هاست‌های اشتراکی"
     },
     {
-      "version": "3.3.1",
-      "date": "2026-09-18T05:47:15Z",
-      "changelog": [
-        "رفع باگ ارسال آدرس نامعتبر در نوار ناوبری (Toolbar) و پیاده‌سازی Encode استاندارد در فرم جستجوی بالای صفحه",
-        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس",
-        "اضافه شدن قابلیت بازنویسی کامل فایل‌های JS درون سرور برای هاست‌های مستقل PHP",
-        "رفع کامل مشکل فرم‌های ورود (مانند Google Login و Gmail) در پروکسی PHP و افزونه وردپرس"
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v3.3.1.zip",
-          "url": "/releases/cloud-portal-php-v3.3.1.zip",
-          "size": 21858,
-          "sha256": "b500ae3b82545f3bc18d7dcf23fadf74ad25a7dbffe265e4381560691b0017b6"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v3.3.1.zip",
-          "url": "/releases/cloud-portal-wp-v3.3.1.zip",
-          "size": 21274,
-          "sha256": "027bae3382fbd7b3827541b12b0883281b39470ac6c1af61775310e9fb5540f4"
-        }
-      }
+      "name": "WordPress Plugin",
+      "version": "22.0.0",
+      "file": "cloud-portal-wp-v22.0.0.zip",
+      "description": "پلاگین وردپرس برای پرتال مرورگر وب"
     },
     {
-      "version": "3.3.0",
-      "date": "2026-09-18T05:35:41Z",
-      "changelog": [
-        "تکمیل و پیاده‌سازی بازنویسی عمیق JSON، ریدایرکت‌های Location، تصاویر تامبنیل در یوتیوب و xHamster برای هسته PHP و افزونه وردپرس",
-        "اضافه شدن قابلیت بازنویسی کامل فایل‌های JS درون سرور برای هاست‌های مستقل PHP",
-        "رفع کامل مشکل فرم‌های ورود (مانند Google Login و Gmail) در پروکسی PHP و افزونه وردپرس",
-        "انتشار نسخه ۳.۳.۰ پایدار برای هاست‌های مستقل PHP و افزونه وردپرس"
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v3.3.0.zip",
-          "url": "/releases/cloud-portal-php-v3.3.0.zip",
-          "size": 21684,
-          "sha256": "90bdf7cf27dd42c0a686bfb4c2dcd8bb068b59e40b2ecb647e02f3af05563ded"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v3.3.0.zip",
-          "url": "/releases/cloud-portal-wp-v3.3.0.zip",
-          "size": 21099,
-          "sha256": "172fce296bb1f98ca283be2487c016a0ffc0a92c9ccc1cb516cb4fb91e9c7920"
-        }
-      }
-    },
-    {
-      "version": "3.2.0",
-      "date": "2026-09-18T05:24:22Z",
-      "changelog": [
-        "رفع کامل مشکل فرم‌های چندمرحله‌ای ورود (مانند Google Login و Gmail) و کلیک روی دکمه Next در درخواست‌های AJAX/Fetch و POST",
-        "بهبود کامل نوار آدرس بالا (Omnibar) برای ناوبری و هدایت آنی و بدون تأخیر به آدرس‌های دلخواه",
-        "تکمیل بازنویسی پویا و هوشمند تصاویر بندانگشتی و پیش‌نمایش در xHamster و یوتیوب",
-        "انتشار نسخه ۳.۲.۰ پایدار برای هاست‌های مستقل PHP و افزونه وردپرس"
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v3.2.0.zip",
-          "url": "/releases/cloud-portal-php-v3.2.0.zip",
-          "size": 20481,
-          "sha256": "2ac4ca72ab9a08cd768e6d9553730c829586dd7c9458375afbc294981e3e88dc"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v3.2.0.zip",
-          "url": "/releases/cloud-portal-wp-v3.2.0.zip",
-          "size": 19936,
-          "sha256": "e6f84ee3f6dfb874a63d3a93522eaf6649e2c4fca69e0e06ae5d3a795e074b1d"
-        }
-      }
-    },
-    {
-      "version": "3.0.0",
-      "date": "2026-09-18T05:17:01Z",
-      "changelog": [
-        "معرفی پروکسی پیشرفته و بازنویسی فعال جاوا اسکریپت (Advanced JS URL Rewriter) جهت عبور تمام URLها و APIهای پویا",
-        "پیاده‌سازی حالت مخفی‌سازی هویت و ضد شناسایی (Stealth & Anti-Fingerprint Shield) شامل مسدودسازی WebRTC، نویز Canvas/Audio و جعل هویت مرورگر",
-        "پشتیبانی کامل از بازنویسی پلی‌لیست‌های HLS (.m3u8) و استریم ویدیوها و تامبنیل‌ها در یوتیوب و xHamster",
-        "توسعه نسخه ۳.۰.۰ پایدار برای نصب روی هاست‌های مستقل PHP و افزونه وردپرس"
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v3.0.0.zip",
-          "url": "/releases/cloud-portal-php-v3.0.0.zip",
-          "size": 20481,
-          "sha256": "2ac4ca72ab9a08cd768e6d9553730c829586dd7c9458375afbc294981e3e88dc"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v3.0.0.zip",
-          "url": "/releases/cloud-portal-wp-v3.0.0.zip",
-          "size": 19936,
-          "sha256": "5c673eccaa092d4dee8b1463b05cb8f9d79fca2691811885a996bb28ef72136c"
-        }
-      }
-    },
-    {
-      "version": "2.1.0",
-      "date": "2026-09-18T05:00:32Z",
-      "changelog": [
-        "رفع کامل تداخل خطای XML رهگیری و ترک‌بک وردپرس (تبدیل پارامترها به پیشوند اختصاصی cp_)",
-        "پشتیبانی کامل از بارگذاری پویا و درخواست‌های InnerTube یوتیوب (YouTube) و استریم تامبنیل‌ها",
-        "فعال‌سازی پیش‌فرض کدگذاری آدرس‌ها (Stealth URL Cipher) در نوار جستجو و فرم‌های پرتال",
-        "نسخه‌بندی هوشمند و خودکار فایل‌های ZIP مستقل PHP و افزونه وردپرس همراه با آرشیو نسخه‌های قبلی"
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v2.1.0.zip",
-          "url": "/releases/cloud-portal-php-v2.1.0.zip",
-          "size": 20481,
-          "sha256": "2ac4ca72ab9a08cd768e6d9553730c829586dd7c9458375afbc294981e3e88dc"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v2.1.0.zip",
-          "url": "/releases/cloud-portal-wp-v2.1.0.zip",
-          "size": 19936,
-          "sha256": "7daf0ae245361e87230c42caf99999a22b6de6cc9e454e0f782493477a264062"
-        }
-      }
+      "name": "Full Package",
+      "version": "22.0.0",
+      "file": "cloud-portal-full-v22.0.0.zip",
+      "description": "بسته کامل شامل همه نسخه‌ها"
     }
   ],
-  "lastUpdated": "2026-09-18T06:07:32Z"
+  "changelog": {
+    "fa": [
+      "اصلاح سیستم آپلود فایل JSON در نسخه Standalone و پلاگین وردپرس",
+      "پشتیبانی از فرمت‌های مختلف داده (POST, php://input, form-encoded)",
+      "رفع خطای 'داده‌های نامعتبر' هنگام آپلود خروجی افزونه کروم",
+      "بهبود پردازش ساختار JSON خروجی افزونه کروم",
+      "هماهنگ‌سازی کامل بین افزونه کروم، نسخه Standalone و پلاگین وردپرس"
+    ],
+    "en": [
+      "Fixed JSON file upload system in Standalone and WordPress plugin",
+      "Support for multiple data formats (POST, php://input, form-encoded)",
+      "Resolved 'Invalid data' error when uploading Chrome extension output",
+      "Improved processing of Chrome extension output JSON structure",
+      "Full synchronization between all components"
+    ]
+  }
 }

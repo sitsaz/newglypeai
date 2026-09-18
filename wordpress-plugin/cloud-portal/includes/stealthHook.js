@@ -168,7 +168,16 @@
 
     window.addEventListener('submit', function(e) {
       var form = e.target;
-      if (form && form.action && !form.dataset.rewritten) {
+      if (form && form.tagName === 'FORM' && form.action && !form.dataset.rewritten) {
+        form.action = resolveStreamUrl(form.action);
+        form.dataset.rewritten = '1';
+      }
+    }, true);
+    
+    // Also intercept form method and ensure it goes through proxy
+    window.addEventListener('formdata', function(e) {
+      var form = e.form;
+      if (form && form.tagName === 'FORM' && form.action && !form.dataset.rewritten) {
         form.action = resolveStreamUrl(form.action);
         form.dataset.rewritten = '1';
       }
@@ -266,7 +275,7 @@
     });
   } catch(e) {}
 
-  // 7b. MutationObserver to automatically proxy newly injected DOM assets and thumbnails (xHamster, YouTube, etc.)
+  // 7b. MutationObserver to automatically proxy newly injected DOM assets and thumbnails (xHamster, YouTube, etc.) + Smart URL Detection
   try {
     var observer = new MutationObserver(function(mutations) {
       mutations.forEach(function(mutation) {
@@ -288,7 +297,52 @@
               if (a && !a.startsWith('#') && !a.startsWith('javascript:') && a.indexOf(gatewayScript) === -1) {
                 node.setAttribute('action', resolveStreamUrl(a));
               }
+            } else if (tag === 'INPUT' || tag === 'BUTTON' || tag === 'TEXTAREA') {
+              // Ensure input/button elements are not blocked by event handlers
+              var onclick = node.getAttribute('onclick');
+              if (onclick && onclick.indexOf('submit') !== -1 && onclick.indexOf(gatewayScript) === -1) {
+                var parentForm = node.closest('form');
+                if (parentForm && parentForm.action && !parentForm.dataset.rewritten) {
+                  parentForm.action = resolveStreamUrl(parentForm.action);
+                  parentForm.dataset.rewritten = '1';
+                }
+              }
             }
+            
+            // Smart scan: Check ALL data-* attributes for URLs
+            var attrs = node.attributes;
+            for (var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              var attrName = attr.name;
+              var attrValue = attr.value;
+              
+              // Check if it's a data-* attribute that might contain URLs
+              if (attrName.startsWith('data-') && attrValue && typeof attrValue === 'string') {
+                // If it looks like a URL
+                if (/^https?:\/\//i.test(attrValue) || /^\/\//.test(attrValue)) {
+                  node.setAttribute(attrName, resolveStreamUrl(attrValue));
+                }
+                // If it's JSON containing URLs
+                else if (attrValue.indexOf('{') !== -1 && attrValue.indexOf('http') !== -1) {
+                  try {
+                    var jsonObj = JSON.parse(attrValue);
+                    var rewrittenJson = deepRewriteJson(jsonObj);
+                    node.setAttribute(attrName, JSON.stringify(rewrittenJson));
+                  } catch(e) {}
+                }
+              }
+              
+              // Check event handlers (onclick, onload, onerror, etc.)
+              if (attrName.startsWith('on') && attrValue && typeof attrValue === 'string') {
+                var rewrittenHandler = attrValue.replace(/(['"])(https?:\/\/[^'"]+)\1/gi, function(match, quote, url) {
+                  return quote + resolveStreamUrl(url) + quote;
+                });
+                if (rewrittenHandler !== attrValue) {
+                  node.setAttribute(attrName, rewrittenHandler);
+                }
+              }
+            }
+            
             // Check data attributes and child forms/links
             var dataEls = node.querySelectorAll ? node.querySelectorAll('form, a, [data-src], [data-thumb], [data-background], [data-poster], [data-url], [data-image], [data-original], [data-bg]') : [];
             for (var i = 0; i < dataEls.length; i++) {
@@ -318,6 +372,17 @@
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   } catch(e) {}
+  
+  // 7c. Intercept keydown events for Enter key in forms (Gmail login fix)
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+      var form = e.target.closest('form');
+      if (form && form.action && !form.dataset.rewritten) {
+        form.action = resolveStreamUrl(form.action);
+        form.dataset.rewritten = '1';
+      }
+    }
+  }, true);
 
   // 8. Toolbar UI Toggle Handler
   window.__togglePortalToolbar = function() {

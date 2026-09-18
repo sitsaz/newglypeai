@@ -4,6 +4,8 @@ Cloud Portal - Automated Versioned Packaging Script
 Packages:
  1. Standalone PHP Host Package -> cloud-portal-php-v{VERSION}.zip (& releases/)
  2. WordPress Plugin Package    -> cloud-portal-wp-v{VERSION}.zip (& releases/)
+ 3. Chrome Extension Package    -> cloud-portal-chrome-ext-v{VERSION}.zip (& releases/)
+ 4. Full Project Archive        -> cloud-portal-full-v{VERSION}.zip (& releases/)
 Also keeps unversioned symlinks/copies (cloud-portal-php.zip, cloud-portal-wp.zip) for persistent permalinks.
 Updates /releases/manifest.json with all built releases, timestamps, and checksums.
 """
@@ -13,7 +15,8 @@ import json
 import zipfile
 import shutil
 import hashlib
-from datetime import datetime
+import sys
+from datetime import datetime, timezone
 
 # Base directories
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -30,7 +33,7 @@ if os.path.exists(DIST_DIR):
 
 # 1. Read or initialize version
 version_file = os.path.join(ROOT_DIR, "version.json")
-version_data = {"version": "2.1.0", "buildNumber": 1, "lastUpdated": datetime.utcnow().isoformat()}
+version_data = {"version": "2.1.0", "buildNumber": 1, "lastUpdated": datetime.now(timezone.utc).isoformat()}
 
 if os.path.exists(version_file):
     try:
@@ -39,8 +42,26 @@ if os.path.exists(version_file):
     except Exception as e:
         print(f"Warning reading version.json: {e}")
 
+# Check if version is provided as command line argument
+if len(sys.argv) > 1:
+    new_version = sys.argv[1]
+    version_data["version"] = new_version
+    # Increment build number
+    version_data["buildNumber"] = version_data.get("buildNumber", 0) + 1
+    
+# Add changelog if provided
+if len(sys.argv) > 2:
+    changelog = sys.argv[2]
+    if "changelog" not in version_data:
+        version_data["changelog"] = []
+    version_data["changelog"].insert(0, {"version": new_version, "date": datetime.now(timezone.utc).isoformat(), "changes": [changelog]})
+
+# Save updated version data
+with open(version_file, "w", encoding="utf-8") as f:
+    json.dump(version_data, f, indent=2)
+
 version_str = version_data.get("version", "2.1.0")
-now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 version_data["lastUpdated"] = now_iso
 
 print(f"==================================================")
@@ -68,6 +89,39 @@ def get_sha256(file_path):
         while chunk := f.read(65536):
             sha.update(chunk)
     return sha.hexdigest()
+
+# Helper to check if path should be excluded from full archive
+def should_exclude(path, root_dir):
+    """Exclude build artifacts, node_modules, dist, and hidden files from full archive"""
+    rel_path = os.path.relpath(path, root_dir)
+    exclude_patterns = [
+        'node_modules',
+        'dist',
+        '.git',
+        '.vscode',
+        '__pycache__',
+        '.env',
+        '*.log',
+        'releases',  # We don't want to include old releases in the full archive
+        'public/releases',
+        'cloud-portal-php.zip',  # Exclude generated zip files
+        'cloud-portal-wp.zip',
+        'cloud-portal-full.zip',
+        'newglype-php-host.zip',
+        'newglype-proxy.zip'
+    ]
+    for pattern in exclude_patterns:
+        if pattern in rel_path:
+            return True
+    # Exclude hidden files/directories
+    parts = rel_path.split(os.sep)
+    for part in parts:
+        if part.startswith('.') and part not in ['.gitkeep']:
+            return True
+    # Exclude any .zip files to prevent nesting
+    if rel_path.endswith('.zip'):
+        return True
+    return False
 
 # 2. Package Standalone PHP Host Bundle
 source_php = os.path.join(ROOT_DIR, "php-package")
@@ -132,7 +186,72 @@ if os.path.exists(DIST_DIR):
 
 print(f"  [OK] WordPress Plugin ZIP: {wp_versioned_name} ({wp_size} bytes)")
 
-# 4. Generate and update manifest.json
+# 4. Package Chrome Extension Bundle
+source_ext_dir = os.path.join(ROOT_DIR, "chrome-extension")
+ext_versioned_name = f"cloud-portal-chrome-ext-v{version_str}.zip"
+ext_release_path = os.path.join(RELEASES_DIR, ext_versioned_name)
+ext_public_versioned = os.path.join(PUBLIC_RELEASES_DIR, ext_versioned_name)
+
+if os.path.exists(source_ext_dir):
+    print(f"Packaging Chrome Extension: {source_ext_dir} -> {ext_versioned_name} ...")
+    with zipfile.ZipFile(ext_release_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(source_ext_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, source_ext_dir)
+                zipf.write(file_path, arcname)
+
+    ext_size = os.path.getsize(ext_release_path)
+    ext_hash = get_sha256(ext_release_path)
+
+    # Copy to public/releases/ and create standard permalink files
+    shutil.copy2(ext_release_path, ext_public_versioned)
+    shutil.copy2(ext_release_path, os.path.join(PUBLIC_DIR, "cloud-portal-chrome-ext.zip"))
+    shutil.copy2(ext_release_path, os.path.join(ROOT_DIR, "cloud-portal-chrome-ext.zip"))
+
+    if os.path.exists(DIST_DIR):
+        shutil.copy2(ext_release_path, os.path.join(DIST_DIR, "cloud-portal-chrome-ext.zip"))
+        shutil.copy2(ext_release_path, os.path.join(DIST_DIR, "releases", ext_versioned_name))
+
+    print(f"  [OK] Chrome Extension ZIP: {ext_versioned_name} ({ext_size} bytes)")
+else:
+    ext_versioned_name = None
+    ext_size = 0
+    ext_hash = ""
+    print("  [SKIP] Chrome Extension directory not found")
+
+# 5. Package Full Project Archive (all source files)
+full_versioned_name = f"cloud-portal-full-v{version_str}.zip"
+full_release_path = os.path.join(RELEASES_DIR, full_versioned_name)
+full_public_versioned = os.path.join(PUBLIC_RELEASES_DIR, full_versioned_name)
+
+print(f"Packaging Full Project Archive: {ROOT_DIR} -> {full_versioned_name} ...")
+with zipfile.ZipFile(full_release_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    for root, dirs, files in os.walk(ROOT_DIR):
+        # Filter out excluded directories
+        dirs[:] = [d for d in dirs if not should_exclude(os.path.join(root, d), ROOT_DIR)]
+        for file in files:
+            file_path = os.path.join(root, file)
+            if should_exclude(file_path, ROOT_DIR):
+                continue
+            arcname = os.path.relpath(file_path, ROOT_DIR)
+            zipf.write(file_path, arcname)
+
+full_size = os.path.getsize(full_release_path)
+full_hash = get_sha256(full_release_path)
+
+# Copy to public/releases/
+shutil.copy2(full_release_path, full_public_versioned)
+shutil.copy2(full_release_path, os.path.join(PUBLIC_DIR, "cloud-portal-full.zip"))
+shutil.copy2(full_release_path, os.path.join(ROOT_DIR, "cloud-portal-full.zip"))
+
+if os.path.exists(DIST_DIR):
+    shutil.copy2(full_release_path, os.path.join(DIST_DIR, "cloud-portal-full.zip"))
+    shutil.copy2(full_release_path, os.path.join(DIST_DIR, "releases", full_versioned_name))
+
+print(f"  [OK] Full Project ZIP: {full_versioned_name} ({full_size} bytes)")
+
+# 6. Generate and update manifest.json (keep only last 3 versions)
 manifest_file = os.path.join(RELEASES_DIR, "manifest.json")
 manifest = {"latest": version_str, "releases": []}
 if os.path.exists(manifest_file):
@@ -147,7 +266,8 @@ manifest["releases"] = [r for r in manifest.get("releases", []) if r.get("versio
 
 manifest["latest"] = version_str
 manifest["lastUpdated"] = now_iso
-manifest["releases"].insert(0, {
+
+release_entry = {
     "version": version_str,
     "date": now_iso,
     "changelog": version_data.get("changelog", []),
@@ -165,7 +285,49 @@ manifest["releases"].insert(0, {
             "sha256": wp_hash
         }
     }
-})
+}
+
+# Add Chrome Extension if available
+if ext_versioned_name:
+    release_entry["files"]["chromeExtension"] = {
+        "fileName": ext_versioned_name,
+        "url": f"/releases/{ext_versioned_name}",
+        "size": ext_size,
+        "sha256": ext_hash
+    }
+
+release_entry["files"]["fullProject"] = {
+    "fileName": full_versioned_name,
+    "url": f"/releases/{full_versioned_name}",
+    "size": full_size,
+    "sha256": full_hash
+}
+
+manifest["releases"].insert(0, release_entry)
+
+# Keep only the last 3 versions to prevent uncontrolled growth
+if len(manifest["releases"]) > 3:
+    old_versions = manifest["releases"][3:]
+    manifest["releases"] = manifest["releases"][:3]
+    
+    # Remove old zip files from releases/ and public/releases/
+    for old_rel in old_versions:
+        old_ver = old_rel.get("version")
+        if old_ver:
+            old_files = [
+                f"cloud-portal-php-v{old_ver}.zip",
+                f"cloud-portal-wp-v{old_ver}.zip",
+                f"cloud-portal-full-v{old_ver}.zip",
+                f"cloud-portal-chrome-ext-v{old_ver}.zip"
+            ]
+            for old_file in old_files:
+                old_path = os.path.join(RELEASES_DIR, old_file)
+                old_public_path = os.path.join(PUBLIC_RELEASES_DIR, old_file)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                    print(f"  [Removed old version] {old_file}")
+                if os.path.exists(old_public_path):
+                    os.remove(old_public_path)
 
 with open(manifest_file, "w", encoding="utf-8") as f:
     json.dump(manifest, f, indent=2, ensure_ascii=False)
