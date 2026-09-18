@@ -165,11 +165,6 @@ class StealthPortalEngine {
      * Generates the Glype-style Floating Top Navigation Toolbar.
      */
     private function generateToolbarHtml($targetUrl, $options = []) {
-        // Helper function for escaping attributes (WordPress parity for standalone)
-        $escAttr = function($str) {
-            return htmlspecialchars($str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        };
-        
         $homeUrl = (strpos($this->gatewayScript, 'browse.php') !== false) ? 'index.php' : home_url('/portal/');
         $rawTarget = htmlspecialchars($targetUrl, ENT_QUOTES, 'UTF-8');
         $encChecked = !empty($options['encodeURL']) ? 'checked' : '';
@@ -181,10 +176,10 @@ class StealthPortalEngine {
         <!-- Portal Floating Navigation Toolbar -->
         <div id="__ptb_wrap" style="position:fixed; top:0; left:0; right:0; height:42px; background:#0f172a; color:#f8fafc; font-family:tahoma,sans-serif; font-size:12px; z-index:2147483647; display:flex; align-items:center; justify-content:space-between; padding:0 12px; box-shadow:0 2px 10px rgba(0,0,0,0.3); border-bottom:1px solid #334155; direction:rtl;">
             <div style="display:flex; align-items:center; gap:8px; flex:1; max-width:700px;">
-                <a href="' . $escAttr($homeUrl) . '" style="color:#38bdf8; text-decoration:none; font-weight:bold; display:flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px; background:#1e293b; white-space:nowrap;">
+                <a href="' . esc_attr($homeUrl) . '" style="color:#38bdf8; text-decoration:none; font-weight:bold; display:flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px; background:#1e293b; white-space:nowrap;">
                     🏠 صفحه اصلی
                 </a>
-                <form action="' . $escAttr($this->gatewayScript) . '" method="GET" style="display:flex; gap:6px; flex:1; margin:0;" onsubmit="event.preventDefault(); var v = this.b.value; if(!v.match(/^https?:/i)) v=\'https://\'+v; var enc = this.enc && this.enc.value==\'1\'; var q = \'?b=\' + (enc ? window.btoa(v).replace(/\+/g, \'-\').replace(/\//g, \'_\').replace(/=/g, \'\') : encodeURIComponent(v)) + \'&tb=\' + (this.tb.value) + (enc ? \'&enc=1\' : \'\'); ' . ($rsChecked ? 'q+=\'&rs=1\';' : '') . ' ' . ($riChecked ? 'q+=\'&ri=1\';' : '') . ' ' . ($stChecked ? 'q+=\'&st=1\';' : '') . ' window.location.href = \'' . $escAttr($this->gatewayScript) . '\' + q;">
+                <form action="' . esc_attr($this->gatewayScript) . '" method="GET" style="display:flex; gap:6px; flex:1; margin:0;" onsubmit="event.preventDefault(); var v = this.b.value; if(!v.match(/^https?:/i)) v=\'https://\'+v; var enc = this.enc && this.enc.value==\'1\'; var q = \'?b=\' + (enc ? window.btoa(v).replace(/\+/g, \'-\').replace(/\//g, \'_\').replace(/=/g, \'\') : encodeURIComponent(v)) + \'&tb=\' + (this.tb.value) + (enc ? \'&enc=1\' : \'\'); ' . ($rsChecked ? 'q+=\'&rs=1\';' : '') . ' ' . ($riChecked ? 'q+=\'&ri=1\';' : '') . ' ' . ($stChecked ? 'q+=\'&st=1\';' : '') . ' window.location.href = \'' . esc_attr($this->gatewayScript) . '\' + q;">
                     <input type="text" name="b" value="' . $rawTarget . '" style="flex:1; background:#1e293b; border:1px solid #475569; color:#f8fafc; padding:4px 10px; border-radius:6px; font-size:12px; font-family:monospace; outline:none;" placeholder="https://...">
                     <input type="hidden" name="tb" value="1">
                     ' . ($encChecked ? '<input type="hidden" name="enc" value="1">' : '') . '

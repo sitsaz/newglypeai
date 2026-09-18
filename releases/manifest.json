@@ -1,22 +1,47 @@
 {
-  "latest": "19.0.0",
+  "latest": "20.0.0",
   "releases": [
     {
-      "version": "19.0.0",
-      "date": "2026-09-18T10:24:28Z",
+      "version": "20.0.0",
+      "date": "2026-09-18T10:39:01Z",
       "changelog": [
+        {
+          "version": "cloud-portal-chrome-ext",
+          "date": "2026-09-18T10:38:58.537506+00:00",
+          "changes": [
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "cloud-portal-php",
+          "date": "2026-09-18T10:38:58.463269+00:00",
+          "changes": [
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "cloud-portal-wp",
+          "date": "2026-09-18T10:38:58.384578+00:00",
+          "changes": [
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-18T10:38:47.000000+00:00",
+          "changes": [
+            "افزودن سیستم احراز هویت کاربران (ثبت‌نام و ورود) در پلاگین وردپرس و نسخه standalone برای جلوگیری از تداخل سشن‌ها",
+            "پیاده‌سازی فرم آپلود فایل JSON خروجی از افزونه کروم در پلاگین وردپرس و نسخه standalone",
+            "افزودن قابلیت حذف سشن‌ها و کوکی‌ها در پلاگین وردپرس (همانند نسخه standalone)",
+            "ذخیره‌سازی سشن‌های کاربران به صورت تفکیک شده بر پایه نام کاربری",
+            "بازنویسی کامل افزونه کروم: حذف سیستم لاگین و آپلود خودکار - اکنون فقط فایل JSON خروجی می‌دهد که کاربر به صورت دستی در اکانت خود آپلود می‌کند"
+          ]
+        },
         {
           "version": "19.0.0",
-          "date": "2026-09-18T10:24:28.364664+00:00",
+          "date": "2026-09-18T10:25:00.000000+00:00",
           "changes": [
-            "cloud-portal-chrome-ext-v19.0.0.zip"
-          ]
-        },
-        {
-          "version": "chrome-extension",
-          "date": "2026-09-18T10:24:25.514349+00:00",
-          "changes": [
-            "cloud-portal-chrome-ext-v19.0.0.zip"
+            "بازنویسی کامل افزونه کروم: حذف سیستم لاگین و آپلود خودکار - اکنون فقط فایل JSON خروجی می‌دهد که کاربر به صورت دستی در اکانت خود آپلود می‌کند"
           ]
         },
         {
@@ -50,40 +75,72 @@
       ],
       "files": {
         "phpStandalone": {
-          "fileName": "cloud-portal-php-v19.0.0.zip",
-          "url": "/releases/cloud-portal-php-v19.0.0.zip",
-          "size": 25315,
-          "sha256": "01f06b5a16d6d20d8f1a729079067a0c4c4436625705847de5e5a1f0f398fe1a"
+          "fileName": "cloud-portal-php-v20.0.0.zip",
+          "url": "/releases/cloud-portal-php-v20.0.0.zip",
+          "size": 32514,
+          "sha256": "1b798ba366fd22576aaf5c84d2e1c0e664431d05b0c89eb3fc9392c44a152bc6"
         },
         "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v19.0.0.zip",
-          "url": "/releases/cloud-portal-wp-v19.0.0.zip",
-          "size": 25088,
-          "sha256": "9d0aef75b5a664eb6c9599a0bbfd83ead75348fb8c850d0e7c54c74dd9afba27"
+          "fileName": "cloud-portal-wp-v20.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v20.0.0.zip",
+          "size": 29533,
+          "sha256": "ed34e49dcd9d1fdab6cba0d59c122c6fd38fd9668c53daed050cd09cc2738a07"
         },
         "chromeExtension": {
-          "fileName": "cloud-portal-chrome-ext-v19.0.0.zip",
-          "url": "/releases/cloud-portal-chrome-ext-v19.0.0.zip",
+          "fileName": "cloud-portal-chrome-ext-v20.0.0.zip",
+          "url": "/releases/cloud-portal-chrome-ext-v20.0.0.zip",
           "size": 4775,
           "sha256": "2e379169b327b8babd312d705f9cdb27fadf03198705882cf9d48aeb5b4babe9"
         },
         "fullProject": {
-          "fileName": "cloud-portal-full-v19.0.0.zip",
-          "url": "/releases/cloud-portal-full-v19.0.0.zip",
-          "size": 312722,
-          "sha256": "15d3fe5e8644ccc27a0c866215375df20b7572a5383e205f69490a83c6745157"
+          "fileName": "cloud-portal-full-v20.0.0.zip",
+          "url": "/releases/cloud-portal-full-v20.0.0.zip",
+          "size": 324852,
+          "sha256": "734b2c1c62d33fbea202443c805f156e0ec4412131c33d5bdeca103cfe7d6975"
         }
       }
     },
     {
-      "version": "chrome-extension",
-      "date": "2026-09-18T10:24:25Z",
+      "version": "cloud-portal-chrome-ext",
+      "date": "2026-09-18T10:38:58Z",
       "changelog": [
         {
-          "version": "chrome-extension",
-          "date": "2026-09-18T10:24:25.514349+00:00",
+          "version": "cloud-portal-chrome-ext",
+          "date": "2026-09-18T10:38:58.537506+00:00",
           "changes": [
-            "cloud-portal-chrome-ext-v19.0.0.zip"
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "cloud-portal-php",
+          "date": "2026-09-18T10:38:58.463269+00:00",
+          "changes": [
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "cloud-portal-wp",
+          "date": "2026-09-18T10:38:58.384578+00:00",
+          "changes": [
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-18T10:38:47.000000+00:00",
+          "changes": [
+            "افزودن سیستم احراز هویت کاربران (ثبت‌نام و ورود) در پلاگین وردپرس و نسخه standalone برای جلوگیری از تداخل سشن‌ها",
+            "پیاده‌سازی فرم آپلود فایل JSON خروجی از افزونه کروم در پلاگین وردپرس و نسخه standalone",
+            "افزودن قابلیت حذف سشن‌ها و کوکی‌ها در پلاگین وردپرس (همانند نسخه standalone)",
+            "ذخیره‌سازی سشن‌های کاربران به صورت تفکیک شده بر پایه نام کاربری",
+            "بازنویسی کامل افزونه کروم: حذف سیستم لاگین و آپلود خودکار - اکنون فقط فایل JSON خروجی می‌دهد که کاربر به صورت دستی در اکانت خود آپلود می‌کند"
+          ]
+        },
+        {
+          "version": "19.0.0",
+          "date": "2026-09-18T10:25:00.000000+00:00",
+          "changes": [
+            "بازنویسی کامل افزونه کروم: حذف سیستم لاگین و آپلود خودکار - اکنون فقط فایل JSON خروجی می‌دهد که کاربر به صورت دستی در اکانت خود آپلود می‌کند"
           ]
         },
         {
@@ -117,35 +174,67 @@
       ],
       "files": {
         "phpStandalone": {
-          "fileName": "cloud-portal-php-vchrome-extension.zip",
-          "url": "/releases/cloud-portal-php-vchrome-extension.zip",
-          "size": 25315,
-          "sha256": "01f06b5a16d6d20d8f1a729079067a0c4c4436625705847de5e5a1f0f398fe1a"
+          "fileName": "cloud-portal-php-vcloud-portal-chrome-ext.zip",
+          "url": "/releases/cloud-portal-php-vcloud-portal-chrome-ext.zip",
+          "size": 32514,
+          "sha256": "1b798ba366fd22576aaf5c84d2e1c0e664431d05b0c89eb3fc9392c44a152bc6"
         },
         "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-vchrome-extension.zip",
-          "url": "/releases/cloud-portal-wp-vchrome-extension.zip",
-          "size": 25085,
-          "sha256": "1568abf39304b444309bb044db879eb0e6a1877607a9eb0de1e36d87ee714961"
+          "fileName": "cloud-portal-wp-vcloud-portal-chrome-ext.zip",
+          "url": "/releases/cloud-portal-wp-vcloud-portal-chrome-ext.zip",
+          "size": 29539,
+          "sha256": "0f46352f72073320844e48a31e34d7bf8370706f76ba3c6088d13d152d16ef41"
         },
         "chromeExtension": {
-          "fileName": "cloud-portal-chrome-ext-vchrome-extension.zip",
-          "url": "/releases/cloud-portal-chrome-ext-vchrome-extension.zip",
+          "fileName": "cloud-portal-chrome-ext-vcloud-portal-chrome-ext.zip",
+          "url": "/releases/cloud-portal-chrome-ext-vcloud-portal-chrome-ext.zip",
           "size": 4775,
           "sha256": "2e379169b327b8babd312d705f9cdb27fadf03198705882cf9d48aeb5b4babe9"
         },
         "fullProject": {
-          "fileName": "cloud-portal-full-vchrome-extension.zip",
-          "url": "/releases/cloud-portal-full-vchrome-extension.zip",
-          "size": 312710,
-          "sha256": "499b47fa3488eed867fd0ff96d37ea8c8f388d44a15e94bbe2b51b48bc52357b"
+          "fileName": "cloud-portal-full-vcloud-portal-chrome-ext.zip",
+          "url": "/releases/cloud-portal-full-vcloud-portal-chrome-ext.zip",
+          "size": 324857,
+          "sha256": "9c0aaef4ff88da99cecc1a7c54807054ebf9a56548ac735e00205b1e4fc02933"
         }
       }
     },
     {
-      "version": "18.0.0",
-      "date": "2026-09-18T09:13:25Z",
+      "version": "cloud-portal-php",
+      "date": "2026-09-18T10:38:58Z",
       "changelog": [
+        {
+          "version": "cloud-portal-php",
+          "date": "2026-09-18T10:38:58.463269+00:00",
+          "changes": [
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "cloud-portal-wp",
+          "date": "2026-09-18T10:38:58.384578+00:00",
+          "changes": [
+            "20.0.0"
+          ]
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-18T10:38:47.000000+00:00",
+          "changes": [
+            "افزودن سیستم احراز هویت کاربران (ثبت‌نام و ورود) در پلاگین وردپرس و نسخه standalone برای جلوگیری از تداخل سشن‌ها",
+            "پیاده‌سازی فرم آپلود فایل JSON خروجی از افزونه کروم در پلاگین وردپرس و نسخه standalone",
+            "افزودن قابلیت حذف سشن‌ها و کوکی‌ها در پلاگین وردپرس (همانند نسخه standalone)",
+            "ذخیره‌سازی سشن‌های کاربران به صورت تفکیک شده بر پایه نام کاربری",
+            "بازنویسی کامل افزونه کروم: حذف سیستم لاگین و آپلود خودکار - اکنون فقط فایل JSON خروجی می‌دهد که کاربر به صورت دستی در اکانت خود آپلود می‌کند"
+          ]
+        },
+        {
+          "version": "19.0.0",
+          "date": "2026-09-18T10:25:00.000000+00:00",
+          "changes": [
+            "بازنویسی کامل افزونه کروم: حذف سیستم لاگین و آپلود خودکار - اکنون فقط فایل JSON خروجی می‌دهد که کاربر به صورت دستی در اکانت خود آپلود می‌کند"
+          ]
+        },
         {
           "version": "17.0.0",
           "date": "2026-09-18T08:45:58.925228+00:00",
@@ -177,31 +266,31 @@
       ],
       "files": {
         "phpStandalone": {
-          "fileName": "cloud-portal-php-v18.0.0.zip",
-          "url": "/releases/cloud-portal-php-v18.0.0.zip",
-          "size": 25315,
-          "sha256": "fdc62e3a2cceae9214c536817f00b91fb1bc6eb705abfc19d15269f9c055214e"
+          "fileName": "cloud-portal-php-vcloud-portal-php.zip",
+          "url": "/releases/cloud-portal-php-vcloud-portal-php.zip",
+          "size": 32514,
+          "sha256": "1b798ba366fd22576aaf5c84d2e1c0e664431d05b0c89eb3fc9392c44a152bc6"
         },
         "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v18.0.0.zip",
-          "url": "/releases/cloud-portal-wp-v18.0.0.zip",
-          "size": 25082,
-          "sha256": "0b862c286490604960b2a659d9e91950fd1c228dd934fc009aa15046d902135b"
+          "fileName": "cloud-portal-wp-vcloud-portal-php.zip",
+          "url": "/releases/cloud-portal-wp-vcloud-portal-php.zip",
+          "size": 29533,
+          "sha256": "a049d58d4e6465dce1653eed90e8a9b122262caf974b8d999d10f46d3bf310a9"
         },
         "chromeExtension": {
-          "fileName": "cloud-portal-chrome-ext-v18.0.0.zip",
-          "url": "/releases/cloud-portal-chrome-ext-v18.0.0.zip",
-          "size": 5480,
-          "sha256": "2130a6a2d01ddf7e2864d7cdd7f639ecf0b4586f687fb1462cc8f80f8af8a7d7"
+          "fileName": "cloud-portal-chrome-ext-vcloud-portal-php.zip",
+          "url": "/releases/cloud-portal-chrome-ext-vcloud-portal-php.zip",
+          "size": 4775,
+          "sha256": "2e379169b327b8babd312d705f9cdb27fadf03198705882cf9d48aeb5b4babe9"
         },
         "fullProject": {
-          "fileName": "cloud-portal-full-v18.0.0.zip",
-          "url": "/releases/cloud-portal-full-v18.0.0.zip",
-          "size": 313366,
-          "sha256": "7fe5f527b48dd7f4aed688d18080f2f49244d4124e1a062dc566d23193bbe5ee"
+          "fileName": "cloud-portal-full-vcloud-portal-php.zip",
+          "url": "/releases/cloud-portal-full-vcloud-portal-php.zip",
+          "size": 324832,
+          "sha256": "5f553914cf65aa95bcf2dc46c676a726e95d38534d55fe991d3d6490eac338cd"
         }
       }
     }
   ],
-  "lastUpdated": "2026-09-18T10:24:28Z"
+  "lastUpdated": "2026-09-18T10:39:01Z"
 }

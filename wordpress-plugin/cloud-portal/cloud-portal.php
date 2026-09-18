@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Cloud Portal & Web Viewer
  * Plugin URI: https://github.com/sitsaz/cloud-portal
- * Description: سامانه پیشرفته پرتال مرورگر و نمایشگر وب برای وردپرس با معماری کاملاً نامحسوس (Stealth)، کوکی‌جار RFC 6265، رمزگذاری آدرس‌ها و نوار ابزار Glype.
- * Version: chrome-extension
+ * Description: سامانه پیشرفته پرتال مرورگر و نمایشگر وب برای وردپرس با معماری کاملاً نامحسوس (Stealth)، کوکی‌جار RFC 6265، رمزگذاری آدرس‌ها و نوار ابزار Glype. شامل سیستم احراز هویت کاربران و آپلود سشن از افزونه کروم.
+ * Version: cloud-portal-wp
  * Author: sitsaz
  * License: MIT
  * Text Domain: cloud-portal
@@ -13,14 +13,16 @@ if (!defined('ABSPATH')) {
     exit; // Prevent direct access
 }
 
-define('CLOUD_PORTAL_VERSION', '19.0.0');
+define('CLOUD_PORTAL_VERSION', '20.0.0');
 define('CLOUD_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('CLOUD_PORTAL_URL', plugin_dir_url(__FILE__));
+define('CLOUD_PORTAL_SESSIONS_DIR', CLOUD_PORTAL_DIR . 'user-sessions/');
 
 require_once CLOUD_PORTAL_DIR . 'includes/CookieJar.php';
 require_once CLOUD_PORTAL_DIR . 'includes/StealthCipher.php';
 require_once CLOUD_PORTAL_DIR . 'includes/ProxyEngine.php';
 
+require_once CLOUD_PORTAL_DIR . 'user-auth.php';
 class CloudPortalWordPressPlugin {
     private static $instance = null;
 
@@ -240,7 +242,13 @@ class CloudPortalWordPressPlugin {
     public function renderShortcode($atts) {
         $gatewayUrl = add_query_arg(['_portal' => '1'], home_url('/'));
         $engine = new StealthPortalEngine($gatewayUrl);
-        $cookieCount = count($engine->getCookieJar()->getAllCookies());
+        
+        // Load user sessions if logged in
+        if (is_user_logged_in()) {
+            cp_load_user_sessions($engine->getCookieJar());
+        }
+        
+        $cookieCount = is_user_logged_in() ? cp_get_user_session_count() : count($engine->getCookieJar()->getAllCookies());
 
         $defaultEnc = get_option('cloud_portal_encode_url', '1') === '1';
         $defaultTb  = get_option('cloud_portal_show_toolbar', '1') === '1';
@@ -263,6 +271,11 @@ class CloudPortalWordPressPlugin {
                 <span style="background: rgba(37,99,235,0.15); color: #60a5fa; border: 1px solid rgba(37,99,235,0.3); padding: 4px 10px; border-radius: 9999px; font-size: 11px;">
                     سشن‌های فعال: <?php echo $cookieCount; ?>
                 </span>
+                <?php if (!is_user_logged_in()): ?>
+                <button onclick="cpShowLoginModal()" style="margin-left: 8px; padding: 4px 10px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 11px; cursor: pointer;">ورود / ثبت‌نام</button>
+                <?php else: ?>
+                <span style="font-size: 10px; color: #10b981;">✓ وارد شده به عنوان <?php echo wp_get_current_user()->display_name; ?></span>
+                <?php endif; ?>
             </div>
 
             <form action="<?php echo esc_url(home_url('/')); ?>" method="GET" style="margin: 0;" onsubmit="
@@ -350,6 +363,132 @@ class CloudPortalWordPressPlugin {
                 </div>
             </form>
         </div>
+        
+        <!-- Login/Register Modal -->
+        <div id="cpLoginModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999999; justify-content:center; align-items:center;">
+            <div style="background:#1e293b; padding:24px; border-radius:16px; max-width:400px; width:90%; border:1px solid #334155; position:relative;">
+                <button onclick="cpHideLoginModal()" style="position:absolute; top:10px; right:10px; background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
+                <h3 style="margin-top:0; color:#fff; font-size:16px; text-align:center;">ورود به حساب کاربری</h3>
+                
+                <div id="cpLoginForm">
+                    <input type="text" id="cpUsername" placeholder="نام کاربری" style="width:100%; padding:10px; margin:8px 0; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#fff; box-sizing:border-box;">
+                    <input type="password" id="cpPassword" placeholder="رمز عبور" style="width:100%; padding:10px; margin:8px 0; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#fff; box-sizing:border-box;">
+                    <button onclick="cpLogin()" style="width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:8px;">ورود</button>
+                    <button onclick="cpRegister()" style="width:100%; padding:10px; background:#10b981; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:8px;">ثبت‌نام</button>
+                    <p id="cpLoginMsg" style="margin-top:10px; font-size:12px; text-align:center;"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Session Section (for logged in users) -->
+        <?php if (is_user_logged_in()): ?>
+        <div style="margin-top:16px; background:#141e33; border:1px solid #1e293b; border-radius:14px; padding:12px;">
+            <div style="font-size:11px; font-weight:bold; color:#94a3b8; margin-bottom:8px;">📤 آپلود فایل سشن از افزونه کروم:</div>
+            <p style="font-size:10px; color:#64748b; margin:0 0 8px 0;">فایل JSON خروجی گرفته شده از افزونه کروم را اینجا آپلود کنید تا سشن‌ها و کوکی‌های شما منتقل شوند.</p>
+            <input type="file" id="cpSessionFile" accept=".json" style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">
+            <button onclick="cpUploadSession()" style="padding:8px 16px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">آپلود سشن</button>
+            <div id="cpUploadStatus" style="margin-top:8px; font-size:11px;"></div>
+        </div>
+        
+        <!-- Clear Sessions Button -->
+        <div style="margin-top:12px; text-align:left;">
+            <button onclick="cpClearSessions()" style="padding:8px 16px; background:#ef4444; color:#fff; border:none; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ حذف تمام سشن‌ها</button>
+        </div>
+        <?php endif; ?>
+        
+        <script>
+        function cpShowLoginModal() { document.getElementById('cpLoginModal').style.display = 'flex'; }
+        function cpHideLoginModal() { document.getElementById('cpLoginModal').style.display = 'none'; }
+        
+        function cpLogin() {
+            var username = document.getElementById('cpUsername').value.trim();
+            var password = document.getElementById('cpPassword').value;
+            var msgEl = document.getElementById('cpLoginMsg');
+            
+            if (!username || !password) { msgEl.textContent = 'لطفاً نام کاربری و رمز عبور را وارد کنید'; msgEl.style.color = '#f43f5e'; return; }
+            
+            var formData = new FormData();
+            formData.append('action', 'cp_login');
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) { msgEl.textContent = data.data.message; msgEl.style.color = '#10b981'; setTimeout(() => { location.reload(); }, 1500); }
+                else { msgEl.textContent = data.data.message; msgEl.style.color = '#f43f5e'; }
+            })
+            .catch(e => { msgEl.textContent = 'خطا در ارتباط با سرور'; msgEl.style.color = '#f43f5e'; });
+        }
+        
+        function cpRegister() {
+            var username = document.getElementById('cpUsername').value.trim();
+            var password = document.getElementById('cpPassword').value;
+            var msgEl = document.getElementById('cpLoginMsg');
+            
+            if (!username || !password) { msgEl.textContent = 'لطفاً نام کاربری و رمز عبور را وارد کنید'; msgEl.style.color = '#f43f5e'; return; }
+            
+            var formData = new FormData();
+            formData.append('action', 'cp_register');
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) { msgEl.textContent = data.data.message; msgEl.style.color = '#10b981'; setTimeout(() => { location.reload(); }, 1500); }
+                else { msgEl.textContent = data.data.message; msgEl.style.color = '#f43f5e'; }
+            })
+            .catch(e => { msgEl.textContent = 'خطا در ارتباط با سرور'; msgEl.style.color = '#f43f5e'; });
+        }
+        
+        function cpUploadSession() {
+            var fileInput = document.getElementById('cpSessionFile');
+            var statusEl = document.getElementById('cpUploadStatus');
+            
+            if (!fileInput.files.length) { statusEl.textContent = 'لطفاً یک فایل JSON انتخاب کنید'; statusEl.style.color = '#f43f5e'; return; }
+            
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var data = JSON.parse(e.target.result);
+                    if (!data.cookies) throw new Error('فرمت فایل نامعتبر است');
+                    
+                    var formData = new FormData();
+                    formData.append('action', 'cp_upload_session');
+                    formData.append('nonce', '<?php echo $nonce; ?>');
+                    formData.append('cookies', JSON.stringify(data.cookies));
+                    
+                    fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) { statusEl.textContent = res.data.message; statusEl.style.color = '#10b981'; }
+                        else { statusEl.textContent = res.data.message || 'خطا در آپلود'; statusEl.style.color = '#f43f5e'; }
+                    })
+                    .catch(err => { statusEl.textContent = 'خطا در ارتباط با سرور'; statusEl.style.color = '#f43f5e'; });
+                } catch(err) {
+                    statusEl.textContent = 'خطا: ' + err.message; statusEl.style.color = '#f43f5e';
+                }
+            };
+            reader.readAsText(fileInput.files[0]);
+        }
+        
+        function cpClearSessions() {
+            if (!confirm('آیا از حذف تمام سشن‌ها و کوکی‌ها اطمینان دارید؟')) return;
+            
+            var formData = new FormData();
+            formData.append('action', 'cp_clear_sessions');
+            formData.append('nonce', '<?php echo $nonce; ?>');
+            
+            fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) { alert(data.data.message); location.reload(); }
+                else { alert(data.data.message || 'خطا در حذف سشن‌ها'); }
+            })
+            .catch(e => { alert('خطا در ارتباط با سرور'); });
+        }
+        </script>
         <?php
         return ob_get_clean();
     }
