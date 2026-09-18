@@ -123,6 +123,18 @@ app.get('/api/download-bundle', (req, res) => {
   }
 });
 
+// Download ready-to-install WordPress Plugin ZIP (newglype-proxy.zip)
+app.get('/api/download-wp-plugin', (req, res) => {
+  const zipPath = path.join(process.cwd(), 'public', 'newglype-proxy.zip');
+  if (fs.existsSync(zipPath)) {
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="newglype-proxy.zip"');
+    res.sendFile(zipPath);
+  } else {
+    res.status(404).json({ error: 'فایل افزونه وردپرس یافت نشد.' });
+  }
+});
+
 // --- Cookie Jar APIs ---
 app.get('/api/cookies', async (req, res) => {
   try {

@@ -11,9 +11,10 @@ import { NetworkInspector } from './components/NetworkInspector';
 import { ModernizationGuide } from './components/ModernizationGuide';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FreeHostAudit } from './components/FreeHostAudit';
+import { WordPressPluginGuide } from './components/WordPressPluginGuide';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'browser' | 'cookies' | 'network' | 'guide' | 'settings' | 'plugins' | 'host-audit'>('browser');
+  const [activeTab, setActiveTab] = useState<'browser' | 'cookies' | 'network' | 'guide' | 'settings' | 'plugins' | 'host-audit' | 'wordpress'>('browser');
   const [stats, setStats] = useState<Stats>({
     totalRequests: 0,
     rewrittenLinks: 0,
@@ -87,6 +88,15 @@ export default function App() {
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>دانلود ZIP هاست PHP</span>
+                </a>
+                <a
+                  href="/api/download-wp-plugin"
+                  download="newglype-proxy.zip"
+                  className="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer border border-blue-400/30"
+                  title="دانلود افزونه وردپرس (newglype-proxy.zip)"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>دانلود افزونه وردپرس (ZIP)</span>
                 </a>
               </div>
               <p className="text-xs text-slate-400">
@@ -173,6 +183,17 @@ export default function App() {
             >
               <Server className="w-3.5 h-3.5" /> بررسی هاست رایگان (Host Audit)
             </button>
+
+            <button
+              onClick={() => setActiveTab('wordpress')}
+              className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'wordpress'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-blue-400 hover:bg-slate-800 border border-blue-500/30'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" /> افزونه وردپرس (WordPress Plugin)
+            </button>
           </nav>
         </div>
       </header>
@@ -197,6 +218,8 @@ export default function App() {
         )}
 
         {activeTab === 'host-audit' && <FreeHostAudit />}
+
+        {activeTab === 'wordpress' && <WordPressPluginGuide />}
 
         {activeTab === 'plugins' && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
