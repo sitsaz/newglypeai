@@ -1,6 +1,6 @@
 <?php
 /**
- * Stealth Web Portal Interface - Version 21.0.0
+ * Stealth Web Portal Interface - Version 22.0.0
  * Clean, modern, responsive UI without proxy footprints.
  * Compatible with all shared cPanel/Apache PHP 7.x - 8.x environments.
  * Includes user authentication and session upload from Chrome extension.
@@ -12,6 +12,13 @@ require_once __DIR__ . '/includes/CookieJar.php';
 require_once __DIR__ . '/includes/StealthCipher.php';
 
 $jar = new StealthCookieJar();
+
+// Helper function for sanitization (since WordPress functions not available)
+if (!function_exists('sanitize_text_field')) {
+    function sanitize_text_field($str) {
+        return htmlspecialchars(strip_tags(trim($str)), ENT_QUOTES, 'UTF-8');
+    }
+}
 
 // Handle actions
 $action = isset($_GET['action']) ? $_GET['action'] : (isset($_POST['action']) ? $_POST['action'] : '');
@@ -106,11 +113,24 @@ if ($action === 'login' || $action === 'register' || $action === 'upload_session
             exit;
         }
         
-        $cookiesJson = isset($_POST['cookies']) ? $_POST['cookies'] : '';
-        $data = json_decode($cookiesJson, true);
+        // Get raw POST data for cookies JSON
+        $rawInput = isset($_POST['cookies']) ? $_POST['cookies'] : file_get_contents('php://input');
+        if (empty($rawInput)) {
+            echo json_encode(['success' => false, 'message' => 'داده‌های کوکی خالی است']);
+            exit;
+        }
+        
+        // Try to decode the JSON - it could be a string or already parsed
+        $data = json_decode($rawInput, true);
+        
+        // If decoding fails, the input might already be an array from $_POST
+        if (!$data && is_string($rawInput)) {
+            // Try without sanitization first
+            $data = json_decode($rawInput, true);
+        }
         
         if (!$data || !is_array($data)) {
-            echo json_encode(['success' => false, 'message' => 'داده‌های نامعتبر']);
+            echo json_encode(['success' => false, 'message' => 'داده‌های نامعتبر: فرمت JSON صحیح نیست. داده دریافتی: ' . substr($rawInput, 0, 100)]);
             exit;
         }
         
@@ -129,11 +149,14 @@ if ($action === 'login' || $action === 'register' || $action === 'upload_session
                 continue;
             }
             
-            $cookieFile = $userSessionDir . '/' . md5($cookie['name'] . '_' . $cookie['domain'] . '_' . time() . '_' . rand()) . '.cookie';
+            // Clean domain - remove leading dot if present
+            $domain = isset($cookie['domain']) ? ltrim($cookie['domain'], '.') : '';
+            
+            $cookieFile = $userSessionDir . '/' . md5($cookie['name'] . '_' . $domain . '_' . time() . '_' . rand()) . '.cookie';
             $cookieData = [
                 'name' => $cookie['name'],
                 'value' => $cookie['value'],
-                'domain' => $cookie['domain'] ?? '',
+                'domain' => $domain,
                 'path' => $cookie['path'] ?? '/',
                 'secure' => $cookie['secure'] ?? false,
                 'httpOnly' => $cookie['httpOnly'] ?? false,
@@ -435,7 +458,7 @@ $displayCookieCount = $isLoggedIn ? $userSessionCount : count($allCookies);
 
     <!-- Footer -->
     <footer class="border-t border-slate-800/80 bg-slate-950 py-4 text-center text-xs text-slate-500">
-        سیستم پرتال ابری نوین با پنهان‌سازی کامل ردپا و شبیه‌سازی مرورگر استاندارد - نسخه ۲۱.۰.۰
+        سیستم پرتال ابری نوین با پنهان‌سازی کامل ردپا و شبیه‌سازی مرورگر استاندارد - نسخه ۲۲.۰.۰
     </footer>
 
     <script>

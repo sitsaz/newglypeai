@@ -1,40 +1,51 @@
-```gitignore
-# Compiled and build artifacts
-*.pyc
-__pycache__/
+```
+# Build artifacts and releases
+*.zip
+dist/
+build/
+releases/
 
-# Dependencies
-vendor/
-node_modules/
-composer.lock
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
-# Environment
+# Environment files
 .env
 .env.local
 *.env.*
 
-# Editors
+# Logs
+*.log
+
+# Editor/IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*.tmp
 
-# WordPress specific
-wp-content/cache/
-*.sql
-wp-config-local.php
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
 
-# Backup files
-*.bak
-*.backup
-*~
-```
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-Wait, I need to reconsider. Looking at the file changes again - they are all PHP source files and a version JSON file. No build artifacts, dependency directories, or temporary files are being changed. Following rule #6, if the changes contain only source/config files and no build artifacts, dependencies, or temp files, I should output nothing.
-
-```gitignore
-
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 ```

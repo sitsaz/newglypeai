@@ -36,8 +36,6 @@ function cp_ensure_sessions_dir() {
  * Handle user registration
  */
 function cp_handle_register() {
-    header('Content-Type: application/json');
-    
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         wp_send_json_error(['message' => 'Method not allowed']);
         return;
@@ -88,8 +86,6 @@ function cp_handle_register() {
  * Handle user login
  */
 function cp_handle_login() {
-    header('Content-Type: application/json');
-    
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         wp_send_json_error(['message' => 'Method not allowed']);
         return;
@@ -125,10 +121,12 @@ function cp_handle_login() {
  * Handle session file upload from Chrome extension
  */
 function cp_handle_upload_session() {
-    header('Content-Type: application/json');
-    
-    // Verify nonce
-    check_ajax_referer('cp_session_nonce', 'nonce', false);
+    // Verify nonce - fail if invalid
+    $nonce_valid = check_ajax_referer('cp_session_nonce', 'nonce', false);
+    if (!$nonce_valid) {
+        wp_send_json_error(['message' => 'خطای امنیتی: nonce نامعتبر است']);
+        return;
+    }
     
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         wp_send_json_error(['message' => 'Method not allowed']);
@@ -143,10 +141,15 @@ function cp_handle_upload_session() {
     
     // Get cookies from POST data
     $cookiesJson = isset($_POST['cookies']) ? $_POST['cookies'] : '';
+    if (empty($cookiesJson)) {
+        wp_send_json_error(['message' => 'داده‌های کوکی خالی است']);
+        return;
+    }
+    
     $data = json_decode($cookiesJson, true);
     
     if (!$data || !is_array($data)) {
-        wp_send_json_error(['message' => 'داده‌های نامعتبر']);
+        wp_send_json_error(['message' => 'داده‌های نامعتبر: فرمت JSON صحیح نیست. ورودی: ' . substr($cookiesJson, 0, 100)]);
         return;
     }
     
@@ -170,11 +173,11 @@ function cp_handle_upload_session() {
             continue;
         }
         
-        $cookieFile = $sessionDir . '/' . md5($cookie['name'] . '_' . $cookie['domain'] . '_' . time() . '_' . rand()) . '.cookie';
+        $cookieFile = $sessionDir . '/' . md5($cookie['name'] . '_' . (isset($cookie['domain']) ? ltrim($cookie['domain'], '.') : '') . '_' . time() . '_' . rand()) . '.cookie';
         $cookieData = [
             'name' => $cookie['name'],
             'value' => $cookie['value'],
-            'domain' => $cookie['domain'] ?? '',
+            'domain' => isset($cookie['domain']) ? ltrim($cookie['domain'], '.') : '',
             'path' => $cookie['path'] ?? '/',
             'secure' => $cookie['secure'] ?? false,
             'httpOnly' => $cookie['httpOnly'] ?? false,
@@ -202,7 +205,12 @@ function cp_handle_upload_session() {
  * Handle clearing user sessions
  */
 function cp_handle_clear_sessions() {
-    header('Content-Type: application/json');
+    // Verify nonce
+    $nonce_valid = check_ajax_referer('cp_session_nonce', 'nonce', false);
+    if (!$nonce_valid) {
+        wp_send_json_error(['message' => 'خطای امنیتی: nonce نامعتبر است']);
+        return;
+    }
     
     if (!is_user_logged_in()) {
         wp_send_json_error(['message' => 'لطفاً ابتدا وارد شوید']);

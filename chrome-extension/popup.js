@@ -43,12 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 cookies: cookies.map(cookie => ({
                     name: cookie.name,
                     value: cookie.value,
-                    domain: cookie.domain,
+                    domain: cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain,
                     path: cookie.path,
                     secure: cookie.secure,
                     httpOnly: cookie.httpOnly,
-                    sameSite: cookie.sameSite,
-                    expirationDate: cookie.expirationDate
+                    sameSite: cookie.sameSite === 'unspecified' || !cookie.sameSite ? 'Lax' : cookie.sameSite,
+                    expirationDate: cookie.expirationDate || null
                 }))
             };
 
