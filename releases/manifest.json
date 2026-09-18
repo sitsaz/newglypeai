@@ -1,6 +1,46 @@
 {
-  "latest": "10.0.0",
+  "latest": "11.0.0",
   "releases": [
+    {
+      "version": "11.0.0",
+      "date": "2026-09-18T08:09:45Z",
+      "changelog": [
+        {
+          "version": "10.0.0",
+          "date": "2026-09-18T07:55:28.370548+00:00",
+          "changes": [
+            "افزودن تابع makeProxiedUrl برای بازنویسی هدر Location و رفع خطای 500 در نسخه standalone"
+          ]
+        },
+        {
+          "version": "8.0.0",
+          "date": "2026-09-18T07:44:43.287551+00:00",
+          "changes": [
+            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
+          ]
+        }
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v11.0.0.zip",
+          "url": "/releases/cloud-portal-php-v11.0.0.zip",
+          "size": 24164,
+          "sha256": "1fc88653c0962c156e2e7e7ea7be67147fa1a71cbc0074fd5c0dc2ba1cba2839"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v11.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v11.0.0.zip",
+          "size": 23904,
+          "sha256": "8ff2b84f6abbe37625e6e2365bb3abb9245f3aeca8feedf1e7e696145939ee9f"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-v11.0.0.zip",
+          "url": "/releases/cloud-portal-full-v11.0.0.zip",
+          "size": 303487,
+          "sha256": "860018f66cbb6c56ea05e439b8e8ebae654fb0e131a3694722ac9879c9c161e2"
+        }
+      }
+    },
     {
       "version": "10.0.0",
       "date": "2026-09-18T07:55:28Z",
@@ -73,40 +113,7 @@
           "sha256": "84172950b7234d591f8a0879beb6a4d76cbbb166a668b5d95a432ebe687848e1"
         }
       }
-    },
-    {
-      "version": "8.0.0",
-      "date": "2026-09-18T07:44:43Z",
-      "changelog": [
-        {
-          "version": "8.0.0",
-          "date": "2026-09-18T07:44:43.287551+00:00",
-          "changes": [
-            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
-          ]
-        }
-      ],
-      "files": {
-        "phpStandalone": {
-          "fileName": "cloud-portal-php-v8.0.0.zip",
-          "url": "/releases/cloud-portal-php-v8.0.0.zip",
-          "size": 24441,
-          "sha256": "6139c4211cac40009fa1323ec8107d64b86229bce998732a522b95231a69ffb8"
-        },
-        "wordPressPlugin": {
-          "fileName": "cloud-portal-wp-v8.0.0.zip",
-          "url": "/releases/cloud-portal-wp-v8.0.0.zip",
-          "size": 23832,
-          "sha256": "68d25dce8f317263da0426ff15034f040e13df3b5094fbf3ebbbeb3420875c7e"
-        },
-        "fullProject": {
-          "fileName": "cloud-portal-full-v8.0.0.zip",
-          "url": "/releases/cloud-portal-full-v8.0.0.zip",
-          "size": 303090,
-          "sha256": "ce778184f88fc1afa2d0d393992bb200da4612ca923f3c7ff7ef2653b7126aa2"
-        }
-      }
     }
   ],
-  "lastUpdated": "2026-09-18T07:55:28Z"
+  "lastUpdated": "2026-09-18T08:09:45Z"
 }
