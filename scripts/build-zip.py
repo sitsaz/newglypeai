@@ -83,7 +83,12 @@ def should_exclude(path, root_dir):
         '.env',
         '*.log',
         'releases',  # We don't want to include old releases in the full archive
-        'public/releases'
+        'public/releases',
+        'cloud-portal-php.zip',  # Exclude generated zip files
+        'cloud-portal-wp.zip',
+        'cloud-portal-full.zip',
+        'newglype-php-host.zip',
+        'newglype-proxy.zip'
     ]
     for pattern in exclude_patterns:
         if pattern in rel_path:
@@ -93,6 +98,9 @@ def should_exclude(path, root_dir):
     for part in parts:
         if part.startswith('.') and part not in ['.gitkeep']:
             return True
+    # Exclude any .zip files to prevent nesting
+    if rel_path.endswith('.zip'):
+        return True
     return False
 
 # 2. Package Standalone PHP Host Bundle

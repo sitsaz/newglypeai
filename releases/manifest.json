@@ -87,7 +87,7 @@
   "releases": [
     {
       "version": "6.0.0",
-      "date": "2026-09-18T07:03:23Z",
+      "date": "2026-09-18T07:17:30Z",
       "changelog": [
         "ارتقاء اصلی به نسخه 6.0.0 با سیستم فوق‌هوشمند پروکسی URL",
         "افزودن اسکن دوگانه Pre-scan برای شناسایی تمام URLهای خام در HTML",
@@ -104,24 +104,24 @@
         "phpStandalone": {
           "fileName": "cloud-portal-php-v6.0.0.zip",
           "url": "/releases/cloud-portal-php-v6.0.0.zip",
-          "size": 24169,
-          "sha256": "f9e097e46e6a8195b6c57c15ef5ed1d776aab02d6c54bf7c1a7191540d2046c1"
+          "size": 24441,
+          "sha256": "6139c4211cac40009fa1323ec8107d64b86229bce998732a522b95231a69ffb8"
         },
         "wordPressPlugin": {
           "fileName": "cloud-portal-wp-v6.0.0.zip",
           "url": "/releases/cloud-portal-wp-v6.0.0.zip",
           "size": 23560,
-          "sha256": "716cda3d0f4d57a053d1d5e4e5fd91e95aca97847a5f3659ad25d42c8a5fab8f"
+          "sha256": "935230f1c321282cb0536d45335fec08e99afce7a387d1987eb86672a311cc8c"
         },
         "fullProject": {
           "fileName": "cloud-portal-full-v6.0.0.zip",
           "url": "/releases/cloud-portal-full-v6.0.0.zip",
-          "size": 110842955,
-          "sha256": "bbaa7e0e67925a249820ec60d3bd07b0990009f7ac11d3dc6652b35e01080658"
+          "size": 302725,
+          "sha256": "330e9f06445fae2d1d8966800c1369aaab5f5b1d066d958b02cc3b5f4821b650"
         }
       }
     }
   ],
   "latest": "6.0.0",
-  "lastUpdated": "2026-09-18T07:03:23Z"
+  "lastUpdated": "2026-09-18T07:17:30Z"
 }

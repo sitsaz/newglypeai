@@ -411,7 +411,7 @@ export async function executeProxyRequest(
     headers: outgoingHeaders,
     data: reqBody && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase()) ? reqBody : undefined,
     responseType: 'arraybuffer',
-    maxRedirects: 5,
+    maxRedirects: 0, // Disable auto-follow to handle ALL redirects manually through proxy
     timeout: 12000, // 12-second safe timeout for free hosting workers
     maxContentLength: 15 * 1024 * 1024, // 15MB limit prevents heap out of memory
     validateStatus: () => true, // capture all status codes
@@ -456,9 +456,14 @@ export async function executeProxyRequest(
   filteredHeaders['Access-Control-Allow-Headers'] = '*';
 
   // 5. Handle redirects (301, 302, 303, 307, 308)
+  // Prevent automatic follow and ensure ALL redirects go through proxy
   if ([301, 302, 303, 307, 308].includes(response.status) && response.headers['location']) {
-    const targetRedirect = new URL(response.headers['location'], normalizedTarget).href;
-    filteredHeaders['location'] = makeProxiedUrl(targetRedirect);
+    const rawLocation = response.headers['location'] as string;
+    const targetRedirect = new URL(rawLocation, normalizedTarget).href;
+    // Force encode the redirect URL to maintain session state
+    filteredHeaders['location'] = makeProxiedUrl(targetRedirect, undefined, { ...options, encodeURL: true });
+    // Also add Refresh header as backup for browsers that don't follow Location properly
+    filteredHeaders['refresh'] = `0; url=${makeProxiedUrl(targetRedirect, undefined, { ...options, encodeURL: true })}`;
   }
 
   // 6. Rewrite HTML, CSS, JS, or M3U8 if appropriate
