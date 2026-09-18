@@ -1,66 +1,5 @@
-```
-# Dependencies
-vendor/
-
-# Logs
-*.log
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editor/IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build artifacts
-dist/
-build/
-*.o
-*.obj
-*.exe
-*.dll
-*.so
-*.a
-*.out
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-.eggs/
-
-# Node.js
-node_modules/
-
-# Java
-*.class
-*.jar
-*.war
-*.ear
-target/
-.gradle/
-build/
-
-# C/C++
-*.a
-*.lib
-*.so
-*.dylib
-*.dll
-
-# Compressed files
+```gitignore
+# Compressed archives
 *.zip
 *.gz
 *.tar
@@ -79,31 +18,15 @@ build/
 *.Z
 *.lz
 *.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Build artifacts
+dist/
+node_modules/
 
-# Cache
-.mypy_cache/
-.pytest_cache/
-.cache/
+# Dependencies
+node_modules/
 
-# Compiled PHP (if using OPcache or similar)
-*.opcache
-
-# WordPress specific
-wp-content/cache/
-*.sql
-
-# Release files (since we have releases/ in the repo)
-releases/*.zip
-releases/*.tar.gz
-releases/*.tar.bz2
-releases/*.tar.xz
+# Production releases
+releases/
+public/releases/
 ```
