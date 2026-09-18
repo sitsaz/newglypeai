@@ -79,6 +79,15 @@ class StealthPortalEngine {
     }
 
     /**
+     * Creates a proxied URL for redirects (Location header rewriting).
+     * Alias for makeStreamUrl with encodeURL forced to true.
+     */
+    public function makeProxiedUrl($targetUrl, $baseUrl = null, $options = []) {
+        $options['encodeURL'] = true;
+        return $this->makeStreamUrl($targetUrl, $baseUrl, $options);
+    }
+
+    /**
      * Resolves a relative URL against a base URL according to RFC 3986.
      */
     public function resolveRelativeUrl($rel, $base) {

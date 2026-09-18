@@ -1,6 +1,46 @@
 {
-  "latest": "9.0.0",
+  "latest": "10.0.0",
   "releases": [
+    {
+      "version": "10.0.0",
+      "date": "2026-09-18T07:55:28Z",
+      "changelog": [
+        {
+          "version": "10.0.0",
+          "date": "2026-09-18T07:55:28.370548+00:00",
+          "changes": [
+            "افزودن تابع makeProxiedUrl برای بازنویسی هدر Location و رفع خطای 500 در نسخه standalone"
+          ]
+        },
+        {
+          "version": "8.0.0",
+          "date": "2026-09-18T07:44:43.287551+00:00",
+          "changes": [
+            "همگام‌سازی کامل قابلیت‌های پردازش ریدایرکت بین نسخه‌های PHP و WordPress"
+          ]
+        }
+      ],
+      "files": {
+        "phpStandalone": {
+          "fileName": "cloud-portal-php-v10.0.0.zip",
+          "url": "/releases/cloud-portal-php-v10.0.0.zip",
+          "size": 24093,
+          "sha256": "89d4bf2037917b88d3c934ad6b60279a9f7fa6dadc09e179b6d40aacff318653"
+        },
+        "wordPressPlugin": {
+          "fileName": "cloud-portal-wp-v10.0.0.zip",
+          "url": "/releases/cloud-portal-wp-v10.0.0.zip",
+          "size": 23902,
+          "sha256": "7b89e305ca7874af6042bf157c17a84be591a10ac224f8028f55fb7219863a32"
+        },
+        "fullProject": {
+          "fileName": "cloud-portal-full-v10.0.0.zip",
+          "url": "/releases/cloud-portal-full-v10.0.0.zip",
+          "size": 303412,
+          "sha256": "ee8541d6a76dbb9165d308cd6ce2c0009ed27c4b638101d9e9c6c66a1e6d33ae"
+        }
+      }
+    },
     {
       "version": "9.0.0",
       "date": "2026-09-18T07:50:01Z",
@@ -68,5 +108,5 @@
       }
     }
   ],
-  "lastUpdated": "2026-09-18T07:50:01Z"
+  "lastUpdated": "2026-09-18T07:55:28Z"
 }
