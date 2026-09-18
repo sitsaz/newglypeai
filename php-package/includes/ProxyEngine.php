@@ -221,11 +221,19 @@ class StealthPortalEngine {
         $stripTitle    = !empty($options['stripTitle']);
         $showToolbar   = !empty($options['showToolbar']);
 
-        // 0. Pre-scan: Extract and rewrite any raw URLs in HTML comments or text nodes that look like tracking/metadata
-        $html = preg_replace_callback('/(https?:\/\/[^\s<>"\'`]+)/i', function($m) use ($targetUrl, $options) {
+        // 0. Pre-scan: Extract and rewrite ALL raw URLs in HTML (comments, text nodes, scripts, metadata)
+        // This is the first line of defense to catch any URL that might have been missed
+        $html = preg_replace_callback('/(https?:\\/\\/[^\s<>"\'`]+)/i', function($m) use ($targetUrl, $options) {
             $url = $m[1];
             if (strpos($url, $this->gatewayScript) !== false) return $url;
             return $this->makeStreamUrl($url, $targetUrl, $options);
+        }, $html);
+
+        // 0b. Deep scan for URLs inside JSON strings embedded in HTML (common in modern web apps)
+        $html = preg_replace_callback('/(["\'])(https?:\\/\\/[^\s<>"\'`]+)\1/i', function($m) use ($targetUrl, $options) {
+            $url = $m[2];
+            if (strpos($url, $this->gatewayScript) !== false) return $m[0];
+            return $m[1] . $this->makeStreamUrl($url, $targetUrl, $options) . $m[1];
         }, $html);
 
         // 1. Neutralize Frame-Busting Code (e.g. if(top!=self) top.location = self.location)

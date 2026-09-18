@@ -189,7 +189,7 @@ if os.path.exists(DIST_DIR):
 
 print(f"  [OK] Full Project ZIP: {full_versioned_name} ({full_size} bytes)")
 
-# 5. Generate and update manifest.json
+# 5. Generate and update manifest.json (keep only last 3 versions)
 manifest_file = os.path.join(RELEASES_DIR, "manifest.json")
 manifest = {"latest": version_str, "releases": []}
 if os.path.exists(manifest_file):
@@ -229,6 +229,29 @@ manifest["releases"].insert(0, {
         }
     }
 })
+
+# Keep only the last 3 versions to prevent uncontrolled growth
+if len(manifest["releases"]) > 3:
+    old_versions = manifest["releases"][3:]
+    manifest["releases"] = manifest["releases"][:3]
+    
+    # Remove old zip files from releases/ and public/releases/
+    for old_rel in old_versions:
+        old_ver = old_rel.get("version")
+        if old_ver:
+            old_files = [
+                f"cloud-portal-php-v{old_ver}.zip",
+                f"cloud-portal-wp-v{old_ver}.zip",
+                f"cloud-portal-full-v{old_ver}.zip"
+            ]
+            for old_file in old_files:
+                old_path = os.path.join(RELEASES_DIR, old_file)
+                old_public_path = os.path.join(PUBLIC_RELEASES_DIR, old_file)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                    print(f"  [Removed old version] {old_file}")
+                if os.path.exists(old_public_path):
+                    os.remove(old_public_path)
 
 with open(manifest_file, "w", encoding="utf-8") as f:
     json.dump(manifest, f, indent=2, ensure_ascii=False)

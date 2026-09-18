@@ -1,18 +1,21 @@
 <?php
 /**
- * NewGlype Modernized Proxy Engine for WordPress Plugin
+ * Modernized Stealth Portal Engine
+ * Full feature parity with classic Glype proxy + modern HTML5/ES6/RFC6265 capabilities.
+ * Zero external dependencies. Compatible with PHP 7.2 - 8.3.
  */
 
 require_once __DIR__ . '/CookieJar.php';
+require_once __DIR__ . '/StealthCipher.php';
 
-class NewGlypeProxyEngine {
+class StealthPortalEngine {
     private $cookieJar;
-    private $gatewayUrl;
-    private $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+    private $gatewayScript;
+    private $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
-    public function __construct($gatewayUrl = 'proxy.php') {
-        $this->cookieJar = new NewGlypeCookieJar();
-        $this->gatewayUrl = $gatewayUrl;
+    public function __construct($gatewayScript = 'browse.php', $isTempCookies = false) {
+        $this->cookieJar = new StealthCookieJar($isTempCookies);
+        $this->gatewayScript = $gatewayScript;
     }
 
     public function getCookieJar() {
@@ -35,7 +38,10 @@ class NewGlypeProxyEngine {
         return false;
     }
 
-    public function makeProxiedUrl($targetUrl, $baseUrl = null) {
+    /**
+     * Converts relative or absolute URLs into disguised stream URLs.
+     */
+    public function makeStreamUrl($targetUrl, $baseUrl = null, $options = []) {
         if (empty($targetUrl)) return $targetUrl;
         $trimmed = trim($targetUrl);
 
@@ -44,7 +50,9 @@ class NewGlypeProxyEngine {
             strpos($trimmed, 'blob:') === 0 ||
             strpos($trimmed, 'javascript:') === 0 ||
             strpos($trimmed, '#') === 0 ||
-            strpos($trimmed, 'newglype_gateway') !== false
+            strpos($trimmed, 'browse.php') !== false ||
+            strpos($trimmed, '?b=') !== false ||
+            strpos($trimmed, '&b=') !== false
         ) {
             return $trimmed;
         }
@@ -54,10 +62,25 @@ class NewGlypeProxyEngine {
             $resolved = $this->resolveRelativeUrl($trimmed, $baseUrl);
         }
 
-        $sep = (strpos($this->gatewayUrl, '?') !== false) ? '&' : '?';
-        return $this->gatewayUrl . $sep . 'url=' . urlencode($resolved);
+        $isEncoded = !empty($options['encodeURL']);
+        $payload = $isEncoded ? StealthCipher::encode($resolved) : urlencode($resolved);
+
+        $sep = (strpos($this->gatewayScript, '?') !== false) ? '&' : '?';
+        $streamUrl = $this->gatewayScript . $sep . 'b=' . $payload;
+
+        // Preserve flags in child links
+        if (!empty($options['removeScripts'])) $streamUrl .= '&rs=1';
+        if (!empty($options['removeImages']))  $streamUrl .= '&ri=1';
+        if (!empty($options['stripTitle']))    $streamUrl .= '&st=1';
+        if (!empty($options['showToolbar']))   $streamUrl .= '&tb=1';
+        if (!empty($options['encodeURL']))     $streamUrl .= '&enc=1';
+
+        return $streamUrl;
     }
 
+    /**
+     * Resolves a relative URL against a base URL according to RFC 3986.
+     */
     public function resolveRelativeUrl($rel, $base) {
         if (parse_url($rel, PHP_URL_SCHEME) != '') return $rel;
         if (strpos($rel, '//') === 0) {
@@ -79,77 +102,294 @@ class NewGlypeProxyEngine {
         return $scheme . '://' . $abs;
     }
 
-    public function rewriteCss($css, $baseUrl) {
-        return preg_replace_callback('/url\(\s*[\'"]?(.*?)[\'"]?\s*\)/i', function($matches) use ($baseUrl) {
+    /**
+     * Rewrites CSS url(...) and @import references.
+     */
+    public function rewriteCss($css, $baseUrl, $options = []) {
+        // 1. Rewrite @import '...' and @import "..."
+        $css = preg_replace_callback('/@import\s+[\'"](.*?)[\'"]/i', function($m) use ($baseUrl, $options) {
+            return '@import "' . $this->makeStreamUrl($m[1], $baseUrl, $options) . '"';
+        }, $css);
+
+        // 2. Rewrite url(...)
+        return preg_replace_callback('/url\(\s*[\'"]?(.*?)[\'"]?\s*\)/i', function($matches) use ($baseUrl, $options) {
             $url = trim($matches[1]);
             if (strpos($url, 'data:') === 0 || strpos($url, 'blob:') === 0 || strpos($url, '#') === 0) {
                 return $matches[0];
             }
-            $proxied = $this->makeProxiedUrl($url, $baseUrl);
-            return 'url("' . $proxied . '")';
+            $stream = $this->makeStreamUrl($url, $baseUrl, $options);
+            return 'url("' . $stream . '")';
         }, $css);
     }
 
-    public function rewriteHtml($html, $targetUrl, $removeScripts = false, $removeImages = false) {
-        $parsed = parse_url($targetUrl);
+    /**
+     * Rewrites responsive srcset attributes (comma-separated URL descriptor pairs).
+     */
+    public function rewriteSrcset($srcset, $baseUrl, $options = []) {
+        $parts = explode(',', $srcset);
+        $rewritten = [];
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if (empty($part)) continue;
+            $chunks = preg_split('/\s+/', $part, 2);
+            $url = $chunks[0];
+            $descriptor = isset($chunks[1]) ? ' ' . $chunks[1] : '';
+            $rewritten[] = $this->makeStreamUrl($url, $baseUrl, $options) . $descriptor;
+        }
+        return implode(', ', $rewritten);
+    }
 
-        // 1. Remove meta CSP and X-Frame-Options
+    /**
+     * Rewrites JS content (replaces hardcoded URLs)
+     */
+    public function rewriteJs($js, $baseUrl, $options = []) {
+        if (empty($js)) return $js;
+        return preg_replace_callback('/([\'"])(https?:\/\/[^\'"]+)\1/i', function($matches) use ($baseUrl, $options) {
+            $quote = $matches[1];
+            $url = $matches[2];
+            $stream = $this->makeStreamUrl($url, $baseUrl, $options);
+            return $quote . $stream . $quote;
+        }, $js);
+    }
+
+    /**
+     * Generates the Glype-style Floating Top Navigation Toolbar.
+     */
+    private function generateToolbarHtml($targetUrl, $options = []) {
+        $homeUrl = (strpos($this->gatewayScript, 'browse.php') !== false) ? 'index.php' : home_url('/portal/');
+        $rawTarget = htmlspecialchars($targetUrl, ENT_QUOTES, 'UTF-8');
+        $encChecked = !empty($options['encodeURL']) ? 'checked' : '';
+        $rsChecked  = !empty($options['removeScripts']) ? 'checked' : '';
+        $riChecked  = !empty($options['removeImages']) ? 'checked' : '';
+        $stChecked  = !empty($options['stripTitle']) ? 'checked' : '';
+
+        return '
+        <!-- Portal Floating Navigation Toolbar -->
+        <div id="__ptb_wrap" style="position:fixed; top:0; left:0; right:0; height:42px; background:#0f172a; color:#f8fafc; font-family:tahoma,sans-serif; font-size:12px; z-index:2147483647; display:flex; align-items:center; justify-content:space-between; padding:0 12px; box-shadow:0 2px 10px rgba(0,0,0,0.3); border-bottom:1px solid #334155; direction:rtl;">
+            <div style="display:flex; align-items:center; gap:8px; flex:1; max-width:700px;">
+                <a href="' . esc_attr($homeUrl) . '" style="color:#38bdf8; text-decoration:none; font-weight:bold; display:flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px; background:#1e293b; white-space:nowrap;">
+                    🏠 صفحه اصلی
+                </a>
+                <form action="' . esc_attr($this->gatewayScript) . '" method="GET" style="display:flex; gap:6px; flex:1; margin:0;" onsubmit="event.preventDefault(); var v = this.b.value; if(!v.match(/^https?:/i)) v=\'https://\'+v; var enc = this.enc && this.enc.value==\'1\'; var q = \'?b=\' + (enc ? window.btoa(v).replace(/\+/g, \'-\').replace(/\//g, \'_\').replace(/=/g, \'\') : encodeURIComponent(v)) + \'&tb=\' + (this.tb.value) + (enc ? \'&enc=1\' : \'\'); ' . ($rsChecked ? 'q+=\'&rs=1\';' : '') . ' ' . ($riChecked ? 'q+=\'&ri=1\';' : '') . ' ' . ($stChecked ? 'q+=\'&st=1\';' : '') . ' window.location.href = \'' . esc_attr($this->gatewayScript) . '\' + q;">
+                    <input type="text" name="b" value="' . $rawTarget . '" style="flex:1; background:#1e293b; border:1px solid #475569; color:#f8fafc; padding:4px 10px; border-radius:6px; font-size:12px; font-family:monospace; outline:none;" placeholder="https://...">
+                    <input type="hidden" name="tb" value="1">
+                    ' . ($encChecked ? '<input type="hidden" name="enc" value="1">' : '') . '
+                    <button type="submit" style="background:#2563eb; color:#fff; border:none; padding:4px 12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px; white-space:nowrap;">
+                        برو ↵
+                    </button>
+                </form>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; font-size:11px; color:#cbd5e1; margin-right:12px;">
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
+                    <input type="checkbox" ' . $encChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'enc\',\'1\'):u.searchParams.delete(\'enc\'); window.location.href=u.href;"> کدگذاری آدرس
+                </label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
+                    <input type="checkbox" ' . $stChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'st\',\'1\'):u.searchParams.delete(\'st\'); window.location.href=u.href;"> پنهان‌سازی عنوان
+                </label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
+                    <input type="checkbox" ' . $rsChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'rs\',\'1\'):u.searchParams.delete(\'rs\'); window.location.href=u.href;"> حذف اسکریپت
+                </label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;">
+                    <input type="checkbox" ' . $riChecked . ' onclick="var u=new URL(window.location.href); this.checked?u.searchParams.set(\'ri\',\'1\'):u.searchParams.delete(\'ri\'); window.location.href=u.href;"> حذف تصویر
+                </label>
+                <button type="button" onclick="window.__togglePortalToolbar()" style="background:#334155; color:#94a3b8; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;" title="بستن نوار ابزار">
+                    ✕
+                </button>
+            </div>
+        </div>
+        <!-- Floating Reopen Badge -->
+        <div id="__ptb_badge" onclick="window.__togglePortalToolbar()" style="position:fixed; top:10px; right:10px; width:28px; height:28px; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:50%; display:none; align-items:center; justify-content:center; cursor:pointer; z-index:2147483647; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.3);" title="نمایش نوار ابزار پرتال">
+            ⚡
+        </div>
+        <script>document.body.style.marginTop = "42px";</script>
+        ';
+    }
+
+    /**
+     * Full HTML Rewriter with Glype Parity + Advanced Smart URL Detection:
+     * - Disguised links, assets, forms, styles, scripts
+     * - Frame-Buster defeat
+     * - Strip title (preventing destination site from showing in tab/history)
+     * - Responsive image srcset rewriting
+     * - Client-side stealth hook injection
+     * - Floating toolbar injection
+     * - Deep scanning for URLs in all attributes and data-* fields
+     */
+    public function rewriteHtml($html, $targetUrl, $options = []) {
+        $removeScripts = !empty($options['removeScripts']);
+        $removeImages  = !empty($options['removeImages']);
+        $stripTitle    = !empty($options['stripTitle']);
+        $showToolbar   = !empty($options['showToolbar']);
+
+        // 0. Pre-scan: Extract and rewrite ALL raw URLs in HTML (comments, text nodes, scripts, metadata)
+        // This is the first line of defense to catch any URL that might have been missed
+        $html = preg_replace_callback('/(https?:\\/\\/[^\s<>"\'`]+)/i', function($m) use ($targetUrl, $options) {
+            $url = $m[1];
+            if (strpos($url, $this->gatewayScript) !== false) return $url;
+            return $this->makeStreamUrl($url, $targetUrl, $options);
+        }, $html);
+
+        // 0b. Deep scan for URLs inside JSON strings embedded in HTML (common in modern web apps)
+        $html = preg_replace_callback('/(["\'])(https?:\\/\\/[^\s<>"\'`]+)\1/i', function($m) use ($targetUrl, $options) {
+            $url = $m[2];
+            if (strpos($url, $this->gatewayScript) !== false) return $m[0];
+            return $m[1] . $this->makeStreamUrl($url, $targetUrl, $options) . $m[1];
+        }, $html);
+
+        // 1. Neutralize Frame-Busting Code (e.g. if(top!=self) top.location = self.location)
+        $html = preg_replace('/(\btop\.location|\bparent\.location|\bwindow\.top\.location)/i', 'window.__safe_loc', $html);
+
+        // 2. Remove meta CSP and X-Frame-Options
         $html = preg_replace('/<meta[^>]+http-equiv=[\'"]?(Content-Security-Policy|X-Frame-Options)[\'"]?[^>]*>/i', '', $html);
 
-        // 2. Remove scripts if requested
+        // 3. Strip or Disguise Page Title (Glype stripTitle feature)
+        if ($stripTitle) {
+            $html = preg_replace('/<title\b[^>]*>(.*?)<\/title>/is', '<title>سند وب | Web Viewer</title>', $html);
+        }
+
+        // 4. Handle meta refresh redirects
+        $html = preg_replace_callback('/<meta[^>]+http-equiv=[\'"]?refresh[\'"]?[^>]*content=([\'"])(.*?)\1[^>]*>/i', function($m) use ($targetUrl, $options) {
+            if (preg_match('/url=(.*?)$/i', $m[2], $urlMatch)) {
+                $refreshed = $this->makeStreamUrl($urlMatch[1], $targetUrl, $options);
+                return preg_replace('/url=.*?$/i', 'url=' . $refreshed, $m[0]);
+            }
+            return $m[0];
+        }, $html);
+
+        // 5. Remove scripts if requested
         if ($removeScripts) {
             $html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $html);
             $html = preg_replace('/\son\w+=["\'][^"\']*["\']/i', '', $html);
         }
 
-        // 3. Remove images if requested
+        // 6. Remove or Rewrite images & responsive srcset
         if ($removeImages) {
-            $html = preg_replace('/<img\b[^>]*>/i', '<span class="img-removed">[Image Removed]</span>', $html);
+            $html = preg_replace('/<img\b[^>]*>/i', '<span style="display:inline-block; padding:4px 8px; font-size:11px; color:#94a3b8; border:1px dashed #cbd5e1; border-radius:4px;">[تصویر حذف شد]</span>', $html);
+            $html = preg_replace('/<picture\b[^>]*>(.*?)<\/picture>/is', '', $html);
         } else {
             // Rewrite <img> src
-            $html = preg_replace_callback('/<img\b([^>]*?)\bsrc=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl) {
-                return '<img' . $m[1] . 'src=' . $m[2] . $this->makeProxiedUrl($m[3], $targetUrl) . $m[2] . $m[4] . '>';
+            $html = preg_replace_callback('/<img\b([^>]*?)\bsrc=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
+                return '<img' . $m[1] . 'src=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
+            }, $html);
+
+            // Rewrite <img> and <source> srcset
+            $html = preg_replace_callback('/<(img|source)\b([^>]*?)\bsrcset=([\'"])(.*?)\3([^>]*)>/i', function($m) use ($targetUrl, $options) {
+                return '<' . $m[1] . $m[2] . 'srcset=' . $m[3] . $this->rewriteSrcset($m[4], $targetUrl, $options) . $m[3] . $m[5] . '>';
+            }, $html);
+
+            // Rewrite data-src and data-url for lazy loaders
+            $html = preg_replace_callback('/<(img|source)\b([^>]*?)\b(data-src|data-url|data-original)=([\'"])(.*?)\4([^>]*)>/i', function($m) use ($targetUrl, $options) {
+                return '<' . $m[1] . $m[2] . $m[3] . '=' . $m[4] . $this->makeStreamUrl($m[5], $targetUrl, $options) . $m[4] . $m[6] . '>';
             }, $html);
         }
 
-        // 4. Rewrite <a href="...">
-        $html = preg_replace_callback('/<a\b([^>]*?)\bhref=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl) {
-            return '<a' . $m[1] . 'href=' . $m[2] . $this->makeProxiedUrl($m[3], $targetUrl) . $m[2] . $m[4] . '>';
+        // 7. Rewrite <video poster="..." src="..."> and <audio src="...">
+        $html = preg_replace_callback('/<(video|audio|track|embed|object)\b([^>]*?)\bsrc=([\'"])(.*?)\3([^>]*)>/i', function($m) use ($targetUrl, $options) {
+            return '<' . $m[1] . $m[2] . 'src=' . $m[3] . $this->makeStreamUrl($m[4], $targetUrl, $options) . $m[3] . $m[5] . '>';
         }, $html);
 
-        // 5. Rewrite <form action="...">
-        $html = preg_replace_callback('/<form\b([^>]*?)\baction=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl) {
-            return '<form' . $m[1] . 'action=' . $m[2] . $this->makeProxiedUrl($m[3], $targetUrl) . $m[2] . $m[4] . '>';
+        $html = preg_replace_callback('/<video\b([^>]*?)\bposter=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
+            return '<video' . $m[1] . 'poster=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
         }, $html);
 
-        // 6. Rewrite <link href="...">
-        $html = preg_replace_callback('/<link\b([^>]*?)\bhref=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl) {
-            return '<link' . $m[1] . 'href=' . $m[2] . $this->makeProxiedUrl($m[3], $targetUrl) . $m[2] . $m[4] . '>';
+        // 8. Rewrite <a href="...">
+        $html = preg_replace_callback('/<a\b([^>]*?)\bhref=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
+            return '<a' . $m[1] . 'href=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
         }, $html);
 
-        // 7. Rewrite <script src="...">
+        // 9. Rewrite <form action="...">
+        $html = preg_replace_callback('/<form\b([^>]*?)\baction=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
+            return '<form' . $m[1] . 'action=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
+        }, $html);
+
+        // 10. Rewrite <link href="..."> (stylesheets, icons, fonts)
+        $html = preg_replace_callback('/<link\b([^>]*?)\bhref=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
+            return '<link' . $m[1] . 'href=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
+        }, $html);
+
+        // 11. Rewrite <script src="...">
         if (!$removeScripts) {
-            $html = preg_replace_callback('/<script\b([^>]*?)\bsrc=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl) {
-                return '<script' . $m[1] . 'src=' . $m[2] . $this->makeProxiedUrl($m[3], $targetUrl) . $m[2] . $m[4] . '>';
+            $html = preg_replace_callback('/<script\b([^>]*?)\bsrc=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
+                return '<script' . $m[1] . 'src=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
+            }, $html);
+
+            // Rewrite inline scripts
+            $html = preg_replace_callback('/<script\b([^>]*)>(.*?)<\/script>/is', function($m) use ($targetUrl, $options) {
+                $innerJs = $m[2];
+                if (strpos($innerJs, '__ptb_wrap') !== false || strpos($innerJs, 'resolveStreamUrl') !== false || trim($innerJs) === '') {
+                    return $m[0];
+                }
+                $rewrittenJs = $this->rewriteJs($innerJs, $targetUrl, $options);
+                return '<script' . $m[1] . '>' . $rewrittenJs . '</script>';
             }, $html);
         }
 
-        // 8. Rewrite <iframe src="...">
-        $html = preg_replace_callback('/<iframe\b([^>]*?)\bsrc=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl) {
-            return '<iframe' . $m[1] . 'src=' . $m[2] . $this->makeProxiedUrl($m[3], $targetUrl) . $m[2] . $m[4] . '>';
+        // 12. Rewrite <iframe src="...">
+        $html = preg_replace_callback('/<iframe\b([^>]*?)\bsrc=([\'"])(.*?)\2([^>]*)>/i', function($m) use ($targetUrl, $options) {
+            return '<iframe' . $m[1] . 'src=' . $m[2] . $this->makeStreamUrl($m[3], $targetUrl, $options) . $m[2] . $m[4] . '>';
         }, $html);
 
-        // 9. Rewrite inline <style>...</style>
-        $html = preg_replace_callback('/<style\b([^>]*)>(.*?)<\/style>/is', function($m) use ($targetUrl) {
-            return '<style' . $m[1] . '>' . $this->rewriteCss($m[2], $targetUrl) . '</style>';
+        // 13. Rewrite inline <style>...</style>
+        $html = preg_replace_callback('/<style\b([^>]*)>(.*?)<\/style>/is', function($m) use ($targetUrl, $options) {
+            return '<style' . $m[1] . '>' . $this->rewriteCss($m[2], $targetUrl, $options) . '</style>';
         }, $html);
 
-        // 10. Inject Universal Interceptor Hook
+        // 14. Rewrite inline style="..." attributes
+        $html = preg_replace_callback('/\bstyle=([\'"])(.*?)\1/is', function($m) use ($targetUrl, $options) {
+            return 'style=' . $m[1] . $this->rewriteCss($m[2], $targetUrl, $options) . $m[1];
+        }, $html);
+
+        // 15. Rewrite SVG <use href="..."> and <image href="...">
+        $html = preg_replace_callback('/<(use|image)\b([^>]*?)\b(href|xlink:href)=([\'"])(.*?)\4([^>]*)>/i', function($m) use ($targetUrl, $options) {
+            return '<' . $m[1] . $m[2] . $m[3] . '=' . $m[4] . $this->makeStreamUrl($m[5], $targetUrl, $options) . $m[4] . $m[6] . '>';
+        }, $html);
+
+        // 16. Rewrite ALL data-* attributes that might contain URLs (smart scan)
+        $html = preg_replace_callback('/\b(data-(?:src|thumb|background|poster|url|image|original|bg|logo|banner|cover|wallpaper|avatar|photo|picture|file|path|link|href|api|endpoint|request|response|config|settings|metadata))=([\'"])(.*?)\2/i', function($m) use ($targetUrl, $options) {
+            $attrName = $m[1];
+            $quote = $m[2];
+            $attrValue = $m[3];
+            // Check if value looks like a URL
+            if (preg_match('/^https?:\/\//i', $attrValue) || preg_match('/^\/\//', $attrValue)) {
+                return $attrName . '=' . $quote . $this->makeStreamUrl($attrValue, $targetUrl, $options) . $quote;
+            }
+            // Also check for JSON objects containing URLs
+            if (strpos($attrValue, '{') !== false && strpos($attrValue, 'http') !== false) {
+                $decoded = json_decode($attrValue, true);
+                if ($decoded !== null) {
+                    $rewritten = $this->deepRewriteArray($decoded, $targetUrl, $options);
+                    return $attrName . '=' . $quote . json_encode($rewritten) . $quote;
+                }
+            }
+            return $m[0];
+        }, $html);
+
+        // 17. Rewrite event handler attributes (onclick, onerror, onload, etc.) containing URLs
+        $html = preg_replace_callback('/\bon\w+=([\'"])(.*?)\1/i', function($m) use ($targetUrl, $options) {
+            $quote = $m[1];
+            $handler = $m[2];
+            // Rewrite URLs in event handlers
+            $rewritten = preg_replace_callback('/([\'"])(https?:\/\/[^\'"]+)\1/i', function($urlMatch) use ($targetUrl, $options) {
+                return $urlMatch[1] . $this->makeStreamUrl($urlMatch[2], $targetUrl, $options) . $urlMatch[1];
+            }, $handler);
+            return 'on' . substr($m[0], 2, strpos($m[0], '=') - 2) . '=' . $quote . $rewritten . $quote;
+        }, $html);
+
+        // 18. Inject Stealth Client-Side Hook
         if (!$removeScripts) {
-            $hookScript = file_get_contents(__DIR__ . '/proxyHook.js');
+            $hookScript = file_get_contents(__DIR__ . '/stealthHook.js');
+            $ctxConfig = [
+                'u'   => $targetUrl,
+                'g'   => $this->gatewayScript,
+                'enc' => !empty($options['encodeURL']),
+                'k'   => 'cp_vault_key',
+                'tb'  => $showToolbar,
+                'rs'  => $removeScripts,
+                'ri'  => $removeImages,
+                'st'  => $stripTitle,
+            ];
             $injection = "\n<script>\n" .
-                "window.__NEWGLYPE_TARGET_URL__ = " . json_encode($targetUrl) . ";\n" .
-                "window.__NEWGLYPE_GATEWAY_URL__ = " . json_encode($this->gatewayUrl) . ";\n" .
+                "window.__portal_ctx__ = " . json_encode($ctxConfig) . ";\n" .
                 $hookScript .
                 "\n</script>\n";
 
@@ -160,37 +400,90 @@ class NewGlypeProxyEngine {
             }
         }
 
+        // 19. Inject Floating Top Navigation Bar (Toolbar)
+        if ($showToolbar) {
+            $toolbarHtml = $this->generateToolbarHtml($targetUrl, $options);
+            if (stripos($html, '<body') !== false) {
+                $html = preg_replace('/<body\b([^>]*)>/i', '<body$1>' . $toolbarHtml, $html, 1);
+            } else {
+                $html = $toolbarHtml . $html;
+            }
+        }
+
         return $html;
     }
 
+    /**
+     * Deep recursive URL rewriter for arrays/objects (used for JSON in data attributes)
+     */
+    private function deepRewriteArray($data, $baseUrl, $options = []) {
+        if (!is_array($data)) {
+            if (is_string($data) && (preg_match('/^https?:\/\//i', $data) || preg_match('/^\/\//', $data))) {
+                return $this->makeStreamUrl($data, $baseUrl, $options);
+            }
+            return $data;
+        }
+        
+        $result = [];
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $result[$key] = $this->deepRewriteArray($value, $baseUrl, $options);
+            } elseif (is_string($value) && (preg_match('/^https?:\/\//i', $value) || preg_match('/^\/\//', $value))) {
+                $result[$key] = $this->makeStreamUrl($value, $baseUrl, $options);
+            } else {
+                $result[$key] = $value;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Executes the HTTP request with realistic desktop browser footprint and SSRF protection.
+     */
     public function executeRequest($targetUrl, $method = 'GET', $postData = null, $customHeaders = []) {
         $parsed = parse_url($targetUrl);
         if (!isset($parsed['host'])) {
-            throw new Exception("آدرس نامعتبر است.");
+            throw new Exception("آدرس وارد شده نامعتبر است.");
         }
 
         if ($this->isBlockedHost($parsed['host'])) {
-            throw new Exception("دسترسی به آدرس‌های لوکال و متادیتا جهت حفاظت از سرور مسدود است (SSRF Guard).");
+            throw new Exception("دسترسی به آدرس‌های داخلی و شبکه محلی مسدود است (SSRF Guard).");
         }
 
         $cookieHeader = $this->cookieJar->getCookieHeader($targetUrl);
 
-        $headers = [
-            'User-Agent: ' . $this->userAgent,
-            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language: en-US,en;q=0.9,fa;q=0.8',
-            'Referer: ' . $parsed['scheme'] . '://' . $parsed['host'] . '/',
-            'Sec-Ch-Ua: "Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"',
-            'Sec-Ch-Ua-Mobile: ?0',
-            'Sec-Ch-Ua-Platform: "Windows"',
-        ];
+        $headers = [];
+        $headerNames = [];
+        foreach($customHeaders as $k => $v) {
+            $headers[] = $k . ': ' . $v;
+            $headerNames[] = strtolower($k);
+        }
+        
+        if (!in_array('user-agent', $headerNames)) {
+            $headers[] = 'User-Agent: ' . $this->userAgent;
+            $headers[] = 'Sec-Ch-Ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"';
+            $headers[] = 'Sec-Ch-Ua-Mobile: ?0';
+            $headers[] = 'Sec-Ch-Ua-Platform: "Windows"';
+        }
+        if (!in_array('accept', $headerNames)) {
+            $headers[] = 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8';
+        }
+        if (!in_array('accept-language', $headerNames)) {
+            $headers[] = 'Accept-Language: fa,en-US;q=0.9,en;q=0.8';
+        }
+        if (!in_array('referer', $headerNames)) {
+            $headers[] = 'Referer: ' . $parsed['scheme'] . '://' . $parsed['host'] . '/';
+        }
+        if (!in_array('sec-fetch-dest', $headerNames)) {
+            $headers[] = 'Sec-Fetch-Dest: document';
+            $headers[] = 'Sec-Fetch-Mode: navigate';
+            $headers[] = 'Sec-Fetch-Site: none';
+            $headers[] = 'Sec-Fetch-User: ?1';
+        }
+        $headers[] = 'Upgrade-Insecure-Requests: 1';
 
         if (!empty($cookieHeader)) {
             $headers[] = 'Cookie: ' . $cookieHeader;
-        }
-
-        if (!empty($customHeaders['content-type'])) {
-            $headers[] = 'Content-Type: ' . $customHeaders['content-type'];
         }
 
         if (function_exists('curl_init')) {
@@ -202,10 +495,10 @@ class NewGlypeProxyEngine {
             curl_setopt($ch, CURLOPT_HEADER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 12);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-            curl_setopt($ch, CURLOPT_ENCODING, '');
+            curl_setopt($ch, CURLOPT_ENCODING, ''); // Auto decompress gzip/deflate/br
 
             if ($method === 'POST' && !empty($postData)) {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
@@ -215,7 +508,7 @@ class NewGlypeProxyEngine {
             if ($rawResponse === false) {
                 $err = curl_error($ch);
                 curl_close($ch);
-                throw new Exception("خطای cURL: " . $err);
+                throw new Exception("خطای اتصال شبکه: " . $err);
             }
 
             $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -235,16 +528,17 @@ class NewGlypeProxyEngine {
             }
 
             return [
-                'status' => $httpCode,
-                'contentType' => $contentType ? $contentType : 'text/html',
+                'status' => $httpCode ? $httpCode : 200,
+                'contentType' => $contentType ? $contentType : 'text/html; charset=UTF-8',
                 'body' => $body,
             ];
         } else {
+            // Fallback: stream context
             $opts = [
                 'http' => [
                     'method' => $method,
                     'header' => implode("\r\n", $headers) . "\r\n",
-                    'timeout' => 12,
+                    'timeout' => 15,
                     'ignore_errors' => true,
                 ],
                 'ssl' => [
@@ -259,10 +553,10 @@ class NewGlypeProxyEngine {
             $context = stream_context_create($opts);
             $body = @file_get_contents($targetUrl, false, $context);
             if ($body === false) {
-                throw new Exception("عدم امکان دریافت داده از سرور مقصد.");
+                throw new Exception("عدم امکان دریافت اطلاعات از سرور مقصد.");
             }
 
-            $contentType = 'text/html';
+            $contentType = 'text/html; charset=UTF-8';
             if (isset($http_response_header)) {
                 foreach ($http_response_header as $hdr) {
                     if (stripos($hdr, 'Set-Cookie:') === 0) {

@@ -1,17 +1,17 @@
 {
-  "version": "5.0.0",
+  "version": "6.0.0",
   "buildNumber": 1,
-  "lastUpdated": "2026-09-18T08:00:00Z",
+  "lastUpdated": "2026-09-18T09:00:00Z",
   "changelog": [
-    "ارتقاء اصلی به نسخه 5.0.0 با سیستم هوشمند بررسی و پروکسی URLها",
-    "اسکن هوشمند تمام URLهای داخل کدها، فایل‌ها، JS و HTML قبل از لود سایت",
-    "بازنویسی کامل ProxyEngine.php با قابلیت تشخیص عمیق URL در تمام اتریبیوت‌ها",
-    "افزودن تابع deepRewriteArray برای پردازش JSONهای تو در تو حاوی URL",
-    "پروکسی خودکار تمام data-* attributeهای حاوی URL یا JSON",
-    "بازنویسی event handlerهای onclick, onload, onerror و سایر رویدادها",
-    "تقویت stealthHook.js با اسکن هوشمند تمام اتریبیوت‌های DOM در MutationObserver",
-    "تشخیص و پروکسی URLهای داخل JSON در data-* attributeها",
-    "بازنویسی URLهای داخل event handlerها در زمان اجرا",
-    "همگام‌سازی کامل تغییرات در هر دو نسخه PHP Standalone و WordPress Plugin"
+    "ارتقاء اصلی به نسخه 6.0.0 با سیستم فوق‌هوشمند پروکسی URL",
+    "افزودن اسکن دوگانه Pre-scan برای شناسایی تمام URLهای خام در HTML",
+    "تشخیص و پروکسی خودکار URLهای داخل رشته‌های JSON تعبیه شده در HTML",
+    "بهبود deepRewriteArray برای پردازش عمیق‌تر JSONهای تو در تو",
+    "پروکسی هوشمند تمام data-* attributeها با تشخیص خودکار URL و JSON",
+    "بازنویسی کامل event handlerهای JavaScript (onclick, onload, onerror, ...)",
+    "تقویت MutationObserver برای اسکن لحظه‌ای تمام اتریبیوت‌های DOM جدید",
+    "پشتیبانی از پروکسی URLهای داخل JSON در data-* attributeها در زمان اجرا",
+    "همگام‌سازی کامل بین نسخه PHP Standalone و WordPress Plugin",
+    "رفع مشکل لینک‌ها و محتواهای پروکسی نشده در سایت‌های مدرن"
   ]
 }
