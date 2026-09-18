@@ -127,39 +127,31 @@ function cp_handle_login() {
 function cp_handle_upload_session() {
     header('Content-Type: application/json');
     
-    // Verify nonce if logged in
-    if (is_user_logged_in()) {
-        check_ajax_referer('cp_upload_nonce', 'nonce', false);
-    }
+    // Verify nonce
+    check_ajax_referer('cp_session_nonce', 'nonce', false);
     
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         wp_send_json_error(['message' => 'Method not allowed']);
         return;
     }
     
-    // Get JSON input
-    $input = file_get_contents('php://input');
-    $data = json_decode($input, true);
+    // Only logged-in users can upload sessions
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'لطفاً ابتدا وارد حساب کاربری خود شوید']);
+        return;
+    }
     
-    if (!$data || !isset($data['cookies'])) {
+    // Get cookies from POST data
+    $cookiesJson = isset($_POST['cookies']) ? $_POST['cookies'] : '';
+    $data = json_decode($cookiesJson, true);
+    
+    if (!$data || !is_array($data)) {
         wp_send_json_error(['message' => 'داده‌های نامعتبر']);
         return;
     }
     
-    // Determine username
-    if (is_user_logged_in()) {
-        $current_user = wp_get_current_user();
-        $username = $current_user->user_login;
-    } elseif (isset($data['username'])) {
-        $username = preg_replace('/[^a-zA-Z0-9_]/', '', $data['username']);
-        if (empty($username) || !username_exists($username)) {
-            wp_send_json_error(['message' => 'کاربر یافت نشد. لطفاً ابتدا وارد حساب خود شوید']);
-            return;
-        }
-    } else {
-        wp_send_json_error(['message' => 'لطفاً ابتدا وارد حساب کاربری خود شوید']);
-        return;
-    }
+    $current_user = wp_get_current_user();
+    $username = $current_user->user_login;
     
     cp_ensure_sessions_dir();
     
@@ -169,17 +161,16 @@ function cp_handle_upload_session() {
     }
     
     // Process cookies
-    $cookies = $data['cookies'];
     $importedCount = 0;
     $failedCount = 0;
     
-    foreach ($cookies as $cookie) {
+    foreach ($data as $cookie) {
         if (!isset($cookie['name']) || !isset($cookie['value'])) {
             $failedCount++;
             continue;
         }
         
-        $cookieFile = $sessionDir . '/' . md5($cookie['name'] . '_' . $cookie['domain'] . '_' . time()) . '.cookie';
+        $cookieFile = $sessionDir . '/' . md5($cookie['name'] . '_' . $cookie['domain'] . '_' . time() . '_' . rand()) . '.cookie';
         $cookieData = [
             'name' => $cookie['name'],
             'value' => $cookie['value'],
@@ -190,7 +181,7 @@ function cp_handle_upload_session() {
             'sameSite' => $cookie['sameSite'] ?? 'Lax',
             'expirationDate' => $cookie['expirationDate'] ?? null,
             'imported_at' => time(),
-            'source_url' => $data['url'] ?? ''
+            'source_url' => ''
         ];
         
         if (file_put_contents($cookieFile, json_encode($cookieData))) {

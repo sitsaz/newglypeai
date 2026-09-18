@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit; // Prevent direct access
 }
 
-define('CLOUD_PORTAL_VERSION', '20.0.0');
+define('CLOUD_PORTAL_VERSION', '21.0.0');
 define('CLOUD_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('CLOUD_PORTAL_URL', plugin_dir_url(__FILE__));
 define('CLOUD_PORTAL_SESSIONS_DIR', CLOUD_PORTAL_DIR . 'user-sessions/');
@@ -368,7 +368,7 @@ class CloudPortalWordPressPlugin {
         <div id="cpLoginModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999999; justify-content:center; align-items:center;">
             <div style="background:#1e293b; padding:24px; border-radius:16px; max-width:400px; width:90%; border:1px solid #334155; position:relative;">
                 <button onclick="cpHideLoginModal()" style="position:absolute; top:10px; right:10px; background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
-                <h3 style="margin-top:0; color:#fff; font-size:16px; text-align:center;">ورود به حساب کاربری</h3>
+                <h3 style="margin-top:0; color:#fff; font-size:16px; text-align:center;">ورود / ثبت‌نام</h3>
                 
                 <div id="cpLoginForm">
                     <input type="text" id="cpUsername" placeholder="نام کاربری" style="width:100%; padding:10px; margin:8px 0; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#fff; box-sizing:border-box;">
@@ -397,6 +397,7 @@ class CloudPortalWordPressPlugin {
         <?php endif; ?>
         
         <script>
+        var cpNonce = '<?php echo wp_create_nonce("cp_session_nonce"); ?>';
         function cpShowLoginModal() { document.getElementById('cpLoginModal').style.display = 'flex'; }
         function cpHideLoginModal() { document.getElementById('cpLoginModal').style.display = 'none'; }
         
@@ -452,11 +453,11 @@ class CloudPortalWordPressPlugin {
             reader.onload = function(e) {
                 try {
                     var data = JSON.parse(e.target.result);
-                    if (!data.cookies) throw new Error('فرمت فایل نامعتبر است');
+                    if (!data.cookies || !Array.isArray(data.cookies)) throw new Error('فرمت فایل نامعتبر است. فایل باید شامل آرایه cookies باشد.');
                     
                     var formData = new FormData();
                     formData.append('action', 'cp_upload_session');
-                    formData.append('nonce', '<?php echo $nonce; ?>');
+                    formData.append('nonce', cpNonce);
                     formData.append('cookies', JSON.stringify(data.cookies));
                     
                     fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: formData })
@@ -478,7 +479,7 @@ class CloudPortalWordPressPlugin {
             
             var formData = new FormData();
             formData.append('action', 'cp_clear_sessions');
-            formData.append('nonce', '<?php echo $nonce; ?>');
+            formData.append('nonce', cpNonce);
             
             fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: formData })
             .then(r => r.json())
