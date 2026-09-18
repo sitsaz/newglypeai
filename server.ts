@@ -16,6 +16,17 @@ import {
 const app = express();
 const PORT = 3000;
 
+// CORS middleware for iframe, subresources, and beacon requests
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Body parsers
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
@@ -113,22 +124,26 @@ app.get('/api/network-logs', (req, res) => {
 
 // Download pre-packaged PHP Standalone ZIP for direct cPanel / free host deployment
 app.get('/api/download-bundle', (req, res) => {
-  const zipPath = path.join(process.cwd(), 'public', 'newglype-php-host.zip');
+  const preferredPath = path.join(process.cwd(), 'public', 'cloud-portal-php.zip');
+  const legacyPath = path.join(process.cwd(), 'public', 'newglype-php-host.zip');
+  const zipPath = fs.existsSync(preferredPath) ? preferredPath : legacyPath;
   if (fs.existsSync(zipPath)) {
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="newglype-php-host.zip"');
+    res.setHeader('Content-Disposition', 'attachment; filename="cloud-portal-php.zip"');
     res.sendFile(zipPath);
   } else {
     res.status(404).json({ error: 'فایل zip هنوز ایجاد نشده است.' });
   }
 });
 
-// Download ready-to-install WordPress Plugin ZIP (newglype-proxy.zip)
+// Download ready-to-install WordPress Plugin ZIP (cloud-portal-wp.zip or newglype-proxy.zip)
 app.get('/api/download-wp-plugin', (req, res) => {
-  const zipPath = path.join(process.cwd(), 'public', 'newglype-proxy.zip');
+  const preferredPath = path.join(process.cwd(), 'public', 'cloud-portal-wp.zip');
+  const legacyPath = path.join(process.cwd(), 'public', 'newglype-proxy.zip');
+  const zipPath = fs.existsSync(preferredPath) ? preferredPath : legacyPath;
   if (fs.existsSync(zipPath)) {
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="newglype-proxy.zip"');
+    res.setHeader('Content-Disposition', 'attachment; filename="cloud-portal-wp.zip"');
     res.sendFile(zipPath);
   } else {
     res.status(404).json({ error: 'فایل افزونه وردپرس یافت نشد.' });
@@ -184,22 +199,46 @@ app.post('/api/proxy/cookies/sync', async (req, res) => {
 
 // --- Universal Modern Proxy Gateway ---
 app.all('/api/proxy/gateway', async (req, res) => {
-  const targetUrl = (req.query.url || req.body?.url) as string;
+  let targetUrl = (req.query.b || req.query.url || req.body?.b || req.body?.url) as string;
+  if (targetUrl && !targetUrl.match(/^https?:\/\//i)) {
+    try {
+      let b64 = targetUrl.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const buf = Buffer.from(b64, 'base64');
+      const key = 'cp_vault_key';
+      let decoded = '';
+      for (let i = 0; i < buf.length; i++) {
+        decoded += String.fromCharCode(buf[i] ^ key.charCodeAt(i % key.length));
+      }
+      if (decoded.match(/^https?:\/\//i)) {
+        targetUrl = decoded;
+      } else {
+        const plain = Buffer.from(b64, 'base64').toString('utf8');
+        if (plain.match(/^https?:\/\//i)) {
+          targetUrl = plain;
+        }
+      }
+    } catch (e) {}
+  }
+
   if (!targetUrl) {
     return res.status(400).send(`
       <!DOCTYPE html>
       <html>
       <body style="font-family: system-ui, sans-serif; padding: 40px; text-align: center; color: #334155;">
         <h2>No Target URL Specified</h2>
-        <p>Please provide a valid destination URL via <code>?url=https://example.com</code></p>
+        <p>Please provide a destination URL via <code>?b=https://example.com</code> or <code>?url=...</code></p>
       </body>
       </html>
     `);
   }
 
   const options: ProxyOptions = {
-    removeScripts: req.query.removeScripts === 'true' || req.body?.removeScripts === true,
-    removeImages: req.query.removeImages === 'true' || req.body?.removeImages === true,
+    removeScripts: req.query.removeScripts === 'true' || req.query.rs === '1' || req.body?.removeScripts === true,
+    removeImages: req.query.removeImages === 'true' || req.query.ri === '1' || req.body?.removeImages === true,
+    stripTitle: req.query.stripTitle === 'true' || req.query.st === '1' || req.body?.stripTitle === true,
+    showToolbar: req.query.showToolbar === 'true' || req.query.tb === '1' || req.body?.showToolbar === true,
+    encodeURL: req.query.encodeURL === 'true' || req.query.enc === '1' || req.body?.encodeURL === true,
     userAgent: (req.query.userAgent || req.body?.userAgent) as string,
     stripSecurityHeaders: req.query.stripSecurityHeaders !== 'false',
     injectHook: req.query.injectHook !== 'false',

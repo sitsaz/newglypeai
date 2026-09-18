@@ -26,6 +26,10 @@ export default function App() {
   const [config, setConfig] = useState<ProxyConfig>({
     removeScripts: false,
     removeImages: false,
+    stripTitle: false,
+    showToolbar: true,
+    encodeURL: true,
+    tempCookies: false,
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
     stripSecurityHeaders: true,
     injectHook: true,
@@ -73,34 +77,34 @@ export default function App() {
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-lg font-bold tracking-tight text-white">
-                  NewGlype Web Proxy
+                  Cloud Portal (مدرن‌سازی کامل Glype)
                 </h1>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  مدرن و بازنویسی شده
+                  معماری نامحسوس (Stealth)
                 </span>
                 <a
                   href="/api/download-bundle"
-                  download="newglype-php-host.zip"
+                  download="cloud-portal-php.zip"
                   className="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer border border-emerald-400/30"
-                  title="دانلود فایل zip آماده آپلود روی هاست PHP"
+                  title="دانلود فایل zip آماده آپلود روی هاست اشتراکی رایگان PHP"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>دانلود ZIP هاست PHP</span>
+                  <span>دانلود ZIP هاست رایگان (PHP)</span>
                 </a>
                 <a
                   href="/api/download-wp-plugin"
-                  download="newglype-proxy.zip"
+                  download="cloud-portal-wp.zip"
                   className="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer border border-blue-400/30"
-                  title="دانلود افزونه وردپرس (newglype-proxy.zip)"
+                  title="دانلود افزونه اختصاصی وردپرس (cloud-portal-wp.zip)"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>دانلود افزونه وردپرس (ZIP)</span>
                 </a>
               </div>
               <p className="text-xs text-slate-400">
-                سیستم پروکسی نسل جدید با پشتیبانی از کدهای وب مدرن، SPAs و RFC 6265 Cookie Jar
+                پرتال نمایشگر صفحات وب با استتار کامل، کدگذاری آدرس‌ها، نوار ابزار Glype و کوکی‌جار RFC 6265
               </p>
             </div>
           </div>

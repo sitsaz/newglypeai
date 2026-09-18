@@ -37,6 +37,10 @@ export interface NetworkLogItem {
 export interface ProxyConfig {
   removeScripts: boolean;
   removeImages: boolean;
+  stripTitle: boolean;
+  showToolbar: boolean;
+  encodeURL: boolean;
+  tempCookies: boolean;
   userAgent: string;
   stripSecurityHeaders: boolean;
   injectHook: boolean;

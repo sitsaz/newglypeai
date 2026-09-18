@@ -14,10 +14,15 @@ export function generateProxyHook(targetUrl: string, options: {
   const targetBasePath = parsedTarget.pathname.substring(0, parsedTarget.pathname.lastIndexOf('/') + 1) || '/';
 
   return `
-<script id="__newglype_injected_hook__">
+<script id="__vault_stream_hook__">
 (function() {
-  if (window.__NEWGLYPE_INITIALIZED__) return;
-  window.__NEWGLYPE_INITIALIZED__ = true;
+  if (window.__vault_initialized__) return;
+  window.__vault_initialized__ = true;
+
+  try {
+    Object.defineProperty(window, 'top', { get: function() { return window.self; }, set: function() {} });
+    Object.defineProperty(window, 'parent', { get: function() { return window.self; }, set: function() {} });
+  } catch(e) {}
 
   var TARGET_ORIGIN = ${JSON.stringify(targetOrigin)};
   var CURRENT_TARGET_URL = ${JSON.stringify(targetUrl)};

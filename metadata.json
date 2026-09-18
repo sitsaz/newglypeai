@@ -1,6 +1,6 @@
 {
   "name": "NewGlype Web Proxy",
-  "description": "Modern full-stack port of the Glype web proxy and anonymity tool with URL proxying, custom browser settings, cookie management, and plugin support.",
+  "description": "Modern full-stack port of the Glype web proxy with stealth portal architecture, URL obfuscation, RFC 6265 cookie jar, and WordPress plugin integration.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

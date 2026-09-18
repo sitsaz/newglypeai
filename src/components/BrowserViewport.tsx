@@ -25,17 +25,19 @@ export const BrowserViewport: React.FC<BrowserViewportProps> = ({ config, onNavi
   const [inputUrl, setInputUrl] = useState('https://news.ycombinator.com/');
   const [activeUrl, setActiveUrl] = useState('https://news.ycombinator.com/');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState<string | null>(null);
   const [deviceMode, setDeviceMode] = useState<'full' | 'laptop' | 'tablet' | 'mobile'>('full');
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Construct proxied gateway URL with all user settings
-  const gatewayUrl = `/api/proxy/gateway?url=${encodeURIComponent(activeUrl)}&removeScripts=${config.removeScripts}&removeImages=${config.removeImages}&stripSecurityHeaders=${config.stripSecurityHeaders}&injectHook=${config.injectHook}&userAgent=${encodeURIComponent(config.userAgent)}`;
+  const gatewayUrl = `/api/proxy/gateway?url=${encodeURIComponent(activeUrl)}&removeScripts=${config.removeScripts}&removeImages=${config.removeImages}&stripTitle=${config.stripTitle}&showToolbar=${config.showToolbar}&encodeURL=${config.encodeURL}&stripSecurityHeaders=${config.stripSecurityHeaders}&injectHook=${config.injectHook}&userAgent=${encodeURIComponent(config.userAgent)}`;
 
   const handleNavigate = (target: string) => {
     let finalUrl = target.trim();
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       finalUrl = 'https://' + finalUrl;
     }
+    setHasError(null);
     setInputUrl(finalUrl);
     setCurrentUrl(finalUrl);
     setActiveUrl(finalUrl);
@@ -49,11 +51,21 @@ export const BrowserViewport: React.FC<BrowserViewportProps> = ({ config, onNavi
   };
 
   const handleReload = () => {
+    setHasError(null);
     setIsLoading(true);
     if (iframeRef.current) {
       iframeRef.current.src = gatewayUrl;
     }
   };
+
+  // Safety timer to clear loading overlay if frame doesn't fire load within 12 seconds
+  useEffect(() => {
+    if (!isLoading) return;
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 12000);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   // Listen for navigation messages from the injected proxy hook
   useEffect(() => {
@@ -216,6 +228,10 @@ export const BrowserViewport: React.FC<BrowserViewportProps> = ({ config, onNavi
               ref={iframeRef}
               src={gatewayUrl}
               onLoad={() => setIsLoading(false)}
+              onError={() => {
+                setIsLoading(false);
+                setHasError('عدم امکان بارگذاری فریم در مرورگر');
+              }}
               className="w-full h-full flex-1 border-0 bg-white"
               title="NewGlype Proxy Sandboxed Frame"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"

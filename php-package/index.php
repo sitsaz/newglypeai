@@ -1,12 +1,14 @@
 <?php
 /**
- * NewGlype Modernized Web Interface for PHP Standalone Hosting
+ * Stealth Web Portal Interface
+ * Clean, modern, responsive UI without proxy footprints.
  * Compatible with all shared cPanel/Apache PHP 7.x - 8.x environments.
  */
 
 require_once __DIR__ . '/includes/CookieJar.php';
+require_once __DIR__ . '/includes/StealthCipher.php';
 
-$jar = new NewGlypeCookieJar();
+$jar = new StealthCookieJar();
 
 if (isset($_GET['action']) && $_GET['action'] === 'clear_cookies') {
     $jar->clearAll();
@@ -21,160 +23,193 @@ $allCookies = $jar->getAllCookies();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NewGlype Web Proxy - هاست اختصاصی PHP</title>
+    <title>پرتال مرورگر ابری - Web Stream Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Tahoma, sans-serif; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
 
     <!-- Header -->
-    <header class="bg-slate-900 text-white shadow-md border-b border-slate-800">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
+    <header class="bg-slate-950/80 backdrop-blur border-b border-slate-800 shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-lg text-white shadow-md">
-                    🛡️
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-bold text-lg text-white shadow-lg shadow-blue-500/20">
+                    🌐
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold">NewGlype Web Proxy (نسخه PHP)</h1>
-                    <p class="text-xs text-slate-400">موتور بهینه‌سازی شده برای هاست‌های اشتراکی رایگان با قلاب جاوااسکریپت و RFC 6265</p>
+                    <h1 class="text-base font-bold text-white tracking-tight">پرتال مرورگر وب (Cloud Portal)</h1>
+                    <p class="text-xs text-slate-400">سامانه نمایش مستقیم و روان اسناد و وبگاه‌ها با کوکی‌جار RFC 6265</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 text-xs">
-                <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    PHP: <?php echo PHP_VERSION; ?>
+                <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    موتور: PHP <?php echo PHP_VERSION; ?>
                 </span>
-                <span class="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    کوکی‌های فعال: <?php echo count($allCookies); ?>
+                <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">
+                    سشن‌های فعال: <?php echo count($allCookies); ?>
                 </span>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-4xl mx-auto w-full px-4 py-8 space-y-6">
-
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto px-4 py-8 flex-1 flex flex-col justify-center">
+        
         <?php if (isset($_GET['cleared'])): ?>
-            <div class="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold">
-                ✓ تمامی کوکی‌های جلسه با موفقیت پاکسازی شدند.
+            <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs text-center">
+                ✓ تمامی کوکی‌ها و سشن‌های ذخیره شده با موفقیت پاکسازی شدند.
             </div>
         <?php endif; ?>
 
-        <!-- Search / URL Card -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-            <div class="text-center space-y-1">
-                <h2 class="text-xl font-bold text-slate-900">مرور وب با استانداردهای نوین</h2>
-                <p class="text-xs text-slate-500">آدرس اینترنتی مورد نظر را وارد کرده و مستقیماً از طریق پروکسی به آن متصل شوید.</p>
+        <!-- Portal Search / Browse Card -->
+        <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="text-center max-w-xl mx-auto mb-6">
+                <h2 class="text-xl md:text-2xl font-black text-white tracking-tight mb-2">
+                    ورود به وبگاه از طریق پرتال
+                </h2>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    نشانی اینترنتی وبگاه مورد نظر خود را وارد کنید. آدرس‌ها به صورت امن کدگذاری شده و محدودیت‌های فریم برطرف می‌شوند.
+                </p>
             </div>
 
-            <form action="proxy.php" method="GET" class="space-y-4">
-                <div class="flex flex-col sm:flex-row gap-2">
+            <form action="browse.php" method="GET" class="space-y-5">
+                <div class="flex flex-col sm:flex-row gap-2.5">
                     <input 
                         type="text" 
-                        name="url" 
-                        placeholder="https://example.com" 
+                        name="b" 
+                        placeholder="https://example.com یا آدرس مورد نظر..." 
                         required 
-                        class="flex-1 px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-900"
-                    />
+                        class="flex-1 px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-sm font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    >
                     <button 
                         type="submit" 
-                        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer shadow-md"
+                        class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer shrink-0"
                     >
-                        اتصال به سایت
+                        شروع مرور وب ↵
                     </button>
                 </div>
 
-                <!-- Toggles -->
-                <div class="flex flex-wrap items-center gap-4 text-xs text-slate-600 pt-2 border-t border-slate-100">
-                    <label class="flex items-center gap-1.5 cursor-pointer">
-                        <input type="checkbox" name="removeScripts" value="1" class="rounded text-indigo-600 focus:ring-indigo-500">
-                        <span>حذف اسکریپت‌ها (حالت امن / سرعت بالا)</span>
-                    </label>
-                    <label class="flex items-center gap-1.5 cursor-pointer">
-                        <input type="checkbox" name="removeImages" value="1" class="rounded text-indigo-600 focus:ring-indigo-500">
-                        <span>حذف تصاویر (صرفه‌جویی در ترافیک)</span>
-                    </label>
+                <!-- Comprehensive Glype Feature Checkboxes -->
+                <div class="pt-4 border-t border-slate-800/80">
+                    <div class="text-[11px] font-bold text-slate-400 mb-3 flex items-center gap-1.5">
+                        ⚙️ گزینه‌ها و تنظیمات مرور (Glype Options):
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-slate-300">
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer select-none">
+                            <input type="checkbox" name="enc" value="1" checked class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                            <span>کدگذاری آدرس (Encode URL)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer select-none">
+                            <input type="checkbox" name="tb" value="1" checked class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                            <span>نوار ابزار بالا (Mini Toolbar)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer select-none">
+                            <input type="checkbox" name="st" value="1" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                            <span>مخفی‌سازی عنوان (Strip Title)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer select-none">
+                            <input type="checkbox" name="rs" value="1" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                            <span>حذف اسکریپت‌ها (No Scripts)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer select-none">
+                            <input type="checkbox" name="ri" value="1" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                            <span>عدم لود تصاویر (No Images)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer select-none">
+                            <input type="checkbox" name="temp" value="1" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                            <span>کوکی‌های موقت (Temp Cookies)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
+                    <span class="text-slate-400">سایت‌های نمونه:</span>
+                    <?php
+                    $presets = [
+                        'DuckDuckGo' => 'https://html.duckduckgo.com/html/',
+                        'Wikipedia'  => 'https://en.m.wikipedia.org/',
+                        'Hacker News'=> 'https://news.ycombinator.com/',
+                        'Google'     => 'https://www.google.com/',
+                    ];
+                    foreach ($presets as $title => $url):
+                        $encUrl = StealthCipher::encode($url);
+                    ?>
+                        <a 
+                            href="browse.php?b=<?php echo urlencode($encUrl); ?>&enc=1&tb=1" 
+                            class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors"
+                        >
+                            <?php echo htmlspecialchars($title); ?>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
             </form>
-
-            <!-- Quick Sites -->
-            <div class="pt-2 flex flex-wrap items-center gap-2 text-xs">
-                <span class="text-slate-400 font-medium">سایت‌های پرکاربرد:</span>
-                <a href="proxy.php?url=https%3A%2F%2Fhtml.duckduckgo.com%2Fhtml%2F" class="px-3 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-full font-medium transition-colors">DuckDuckGo</a>
-                <a href="proxy.php?url=https%3A%2F%2Fen.m.wikipedia.org%2F" class="px-3 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-full font-medium transition-colors">Wikipedia</a>
-                <a href="proxy.php?url=https%3A%2F%2Fnews.ycombinator.com%2F" class="px-3 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-full font-medium transition-colors">Hacker News</a>
-                <a href="proxy.php?url=https%3A%2F%2Fwww.google.com%2F" class="px-3 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-full font-medium transition-colors">Google</a>
-            </div>
         </div>
 
-        <!-- Cookie Jar Table -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div class="flex justify-between items-center">
+        <!-- Session Cookies Management Table -->
+        <div class="mt-8 bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
                 <div>
-                    <h3 class="font-bold text-slate-900 text-sm">کوکی‌های ذخیره شده در نشست جاری (Cookie Jar)</h3>
-                    <p class="text-xs text-slate-500">این کوکی‌ها به طور خودکار به همراه درخواست‌ها به سرورهای مقصد ارسال می‌شوند.</p>
+                    <h3 class="text-sm font-bold text-white">مدیریت نشست‌ها و کوکی‌ها (Session Store)</h3>
+                    <p class="text-xs text-slate-400">کوکی‌های RFC 6265 ذخیره شده به صورت تفکیک شده بر پایه دامنه</p>
                 </div>
-                <?php if (!empty($allCookies)): ?>
-                    <a href="index.php?action=clear_cookies" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold">
-                        پاک کردن همه
+                <?php if (count($allCookies) > 0): ?>
+                    <a 
+                        href="index.php?action=clear_cookies" 
+                        class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold transition-colors cursor-pointer"
+                        onclick="return confirm('آیا از حذف تمام کوکی‌ها و سشن‌ها اطمینان دارید؟');"
+                    >
+                        پاکسازی تمام کوکی‌ها
                     </a>
                 <?php endif; ?>
             </div>
 
-            <div class="border border-slate-200 rounded-xl overflow-hidden">
-                <table class="w-full text-left text-xs font-mono">
-                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
-                        <tr>
-                            <th class="p-2.5">دامنه (Domain)</th>
-                            <th class="p-2.5">کلید (Key)</th>
-                            <th class="p-2.5">مسیر (Path)</th>
-                            <th class="p-2.5">امنیت</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <?php if (empty($allCookies)): ?>
-                            <tr>
-                                <td colspan="4" class="p-4 text-center text-slate-400 font-sans">
-                                    هنوز کوکی در این جلسه ثبت نشده است. با وب‌گردی، کوکی‌ها به صورت زنده ذخیره می‌شوند.
-                                </td>
+            <?php if (count($allCookies) === 0): ?>
+                <div class="p-6 text-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl">
+                    در حال حاضر هیچ کوکی در این سشن ذخیره نشده است. با مرور سایت‌ها کوکی‌ها در اینجا ذخیره می‌شوند.
+                </div>
+            <?php else: ?>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="pb-2">دامنه</th>
+                                <th class="pb-2">نام کلید</th>
+                                <th class="pb-2">مسیر</th>
+                                <th class="pb-2">انقضا</th>
+                                <th class="pb-2">امنیت</th>
                             </tr>
-                        <?php else: ?>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 font-mono text-slate-300">
                             <?php foreach ($allCookies as $c): ?>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="p-2.5 text-indigo-600 font-semibold"><?php echo htmlspecialchars($c['domain']); ?></td>
-                                    <td class="p-2.5 text-slate-800"><?php echo htmlspecialchars($c['key']); ?></td>
-                                    <td class="p-2.5 text-slate-500"><?php echo htmlspecialchars($c['path']); ?></td>
-                                    <td class="p-2.5 text-slate-500">
-                                        <?php if ($c['secure']): ?><span class="px-1 bg-emerald-50 text-emerald-700 rounded text-[10px]">Secure</span><?php endif; ?>
-                                        <?php if ($c['httpOnly']): ?><span class="px-1 bg-amber-50 text-amber-700 rounded text-[10px]">HttpOnly</span><?php endif; ?>
+                                <tr>
+                                    <td class="py-2 text-blue-400"><?php echo htmlspecialchars($c['domain']); ?></td>
+                                    <td class="py-2 text-white font-bold"><?php echo htmlspecialchars($c['key']); ?></td>
+                                    <td class="py-2 text-slate-400"><?php echo htmlspecialchars($c['path']); ?></td>
+                                    <td class="py-2 text-slate-400">
+                                        <?php echo $c['expires'] ? date('Y-m-d H:i', $c['expires']) : 'سشن (Session)'; ?>
+                                    </td>
+                                    <td class="py-2">
+                                        <?php if ($c['secure']): ?><span class="text-emerald-400">Secure</span><?php endif; ?>
+                                        <?php if ($c['httpOnly']): ?><span class="text-indigo-400 mr-1">HttpOnly</span><?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Features Infobox -->
-        <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-sm space-y-3">
-            <h3 class="font-bold text-base flex items-center gap-2">
-                <span>⚡</span> ویژگی‌های فنی نسخه نوین PHP:
-            </h3>
-            <ul class="text-xs text-slate-300 space-y-1.5 list-disc pr-4 leading-relaxed">
-                <li><strong>قلاب جاوااسکریپت سراسری (Client Hook):</strong> تمام درخواست‌های <code class="text-indigo-300">fetch()</code> و <code class="text-indigo-300">XMLHttpRequest</code> درون صفحات بازنویسی و حل می‌شوند.</li>
-                <li><strong>همگام‌سازی زنده کوکی‌ها (Cookie Beacon):</strong> کوکی‌های ایجاد شده با جاوااسکریپت کلاینت خودکار با سشن PHP همگام می‌شوند.</li>
-                <li><strong>حذف هدرهای محدودکننده:</strong> حذف <code class="text-indigo-300">Content-Security-Policy</code> و <code class="text-indigo-300">X-Frame-Options</code> جهت نمایش بدون قطعی.</li>
-                <li><strong>سازگاری ۱۰۰٪ با انواع هاستینگ:</strong> بدون نیاز به Composer یا Node.js، تنها با آپلود فایل در <code class="text-indigo-300">public_html</code>.</li>
-            </ul>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500">
-        NewGlype Standalone PHP Edition • آماده استقرار روی انواع هاست اشتراکی رایگان و پولی
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-4 text-center text-xs text-slate-500">
+        سیستم پرتال ابری نوین با پنهان‌سازی کامل ردپا و شبیه‌سازی مرورگر استاندارد
     </footer>
 
 </body>

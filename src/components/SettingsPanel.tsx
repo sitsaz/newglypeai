@@ -91,6 +91,74 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ config, onChange }
           <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
             <input
               type="checkbox"
+              checked={config.encodeURL}
+              onChange={(e) => onChange({ ...config, encodeURL: e.target.checked })}
+              className="mt-1 rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+            />
+            <div>
+              <span className="font-semibold text-slate-800 text-sm block">
+                کدگذاری دوطرفه آدرس (Encode URL)
+              </span>
+              <p className="text-xs text-slate-500 mt-0.5">
+                آدرس سایت مقصد با الگوریتم برگشت‌پذیر مبهم‌سازی شده و از ثبت در تاریخچه مرورگر، کش یا لاگ‌های سرور جلوگیری می‌شود.
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
+              checked={config.stripTitle}
+              onChange={(e) => onChange({ ...config, stripTitle: e.target.checked })}
+              className="mt-1 rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+            />
+            <div>
+              <span className="font-semibold text-slate-800 text-sm block">
+                پنهان‌سازی عنوان تب (Strip Page Title)
+              </span>
+              <p className="text-xs text-slate-500 mt-0.5">
+                عنوان اصلی سایت را با عبارت عمومی جایگزین می‌کند تا نام سایت مشاهده‌شده در نوار مرورگر و سیستم‌عامل افشا نشود.
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
+              checked={config.showToolbar}
+              onChange={(e) => onChange({ ...config, showToolbar: e.target.checked })}
+              className="mt-1 rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+            />
+            <div>
+              <span className="font-semibold text-slate-800 text-sm block">
+                نوار ابزار بالای صفحه (Glype Mini Toolbar)
+              </span>
+              <p className="text-xs text-slate-500 mt-0.5">
+                نمایش نوار ابزار شناور در بالای صفحات وب جهت بازگشت سریع به خانه، جستجوی جدید و بستن/کوچک‌سازی منو.
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
+              checked={config.tempCookies}
+              onChange={(e) => onChange({ ...config, tempCookies: e.target.checked })}
+              className="mt-1 rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+            />
+            <div>
+              <span className="font-semibold text-slate-800 text-sm block">
+                کوکی‌های موقت سشن (Temp Cookies)
+              </span>
+              <p className="text-xs text-slate-500 mt-0.5">
+                کوکی‌ها پس از پایان نشست به طور خودکار پاک می‌شوند و هیچ اطلاعاتی روی دیسک هاست باقی نمی‌ماند.
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
               checked={config.removeScripts}
               onChange={(e) => onChange({ ...config, removeScripts: e.target.checked })}
               className="mt-1 rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"

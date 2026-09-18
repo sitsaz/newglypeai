@@ -6,6 +6,9 @@ import { generateProxyHook } from './proxyHook';
 export interface ProxyOptions {
   removeScripts?: boolean;
   removeImages?: boolean;
+  stripTitle?: boolean;
+  showToolbar?: boolean;
+  encodeURL?: boolean;
   userAgent?: string;
   stripSecurityHeaders?: boolean;
   injectHook?: boolean;
@@ -148,6 +151,13 @@ export function rewriteHtml(
     $('meta[http-equiv="Content-Security-Policy"]').remove();
     $('meta[http-equiv="X-Frame-Options"]').remove();
     $('meta[http-equiv="origin-trial"]').remove();
+  }
+
+  // 1.5 Strip page title if requested (Glype feature)
+  if (options.stripTitle) {
+    if ($('title').length > 0) {
+      $('title').text('صفحه وب | Web Document');
+    }
   }
 
   // 2. Remove scripts if requested
